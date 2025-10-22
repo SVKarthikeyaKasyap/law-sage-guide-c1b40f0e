@@ -3,11 +3,14 @@ import { Header } from "@/components/Header";
 import { ChatMessage } from "@/components/ChatMessage";
 import { ChatInput } from "@/components/ChatInput";
 import { CaseTypeSelector } from "@/components/CaseTypeSelector";
+import { FeedbackButtons } from "@/components/FeedbackButtons";
+import { DocumentGenerator } from "@/components/DocumentGenerator";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { RotateCcw } from "lucide-react";
+import { RotateCcw, FileText } from "lucide-react";
 import { toast } from "sonner";
+import { useStreamingChat } from "@/hooks/useStreamingChat";
 
 interface Message {
   role: "user" | "assistant";
@@ -17,9 +20,14 @@ interface Message {
 
 const Index = () => {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [caseType, setCaseType] = useState<string | null>(null);
+  const [showDocGenerator, setShowDocGenerator] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const { sendMessage, isLoading } = useStreamingChat({
+    caseType: caseType || 'Criminal',
+    onMessagesUpdate: setMessages
+  });
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -31,39 +39,18 @@ const Index = () => {
     setCaseType(type);
     const welcomeMessage: Message = {
       role: "assistant",
-      content: `I'll help you with your ${type} case. I'm an AI assistant trained on Indian law including the IPC, CrPC, and Constitution.\n\nPlease describe the facts of your case, and I'll guide you through the relevant legal provisions step by step.\n\nWhat are the key facts of your case?`,
+      content: `I'll help you with your ${type} case. I'm an AI assistant powered by advanced language models, trained on Indian law including the IPC, CrPC, and Constitution.\n\n**How I can help:**\n• Identify applicable legal provisions\n• Guide you through case facts gathering\n• Explain legal procedures step-by-step\n• Generate draft legal documents (FIR, notices, complaints)\n\n**Please describe the facts of your case, and I'll analyze it for you.**\n\n*Note: This is informational guidance only. Always consult a qualified lawyer for legal advice.*`,
       timestamp: new Date(),
     };
     setMessages([welcomeMessage]);
   };
 
   const handleSendMessage = async (content: string) => {
-    const userMessage: Message = {
-      role: "user",
-      content,
-      timestamp: new Date(),
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
-    setIsLoading(true);
-
     try {
-      // Simulate AI response for now
-      // In production, this would call an edge function with Lovable AI
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      const assistantMessage: Message = {
-        role: "assistant",
-        content: `Thank you for providing those details. Based on the information:\n\n**Relevant Legal Provisions:**\n\n1. **Indian Penal Code (IPC)** - This case may involve sections related to [specific sections based on case facts]\n\n2. **Code of Criminal Procedure (CrPC)** - Applicable procedural provisions include...\n\n**Next Steps:**\n\nTo provide more specific guidance, could you please clarify:\n\n• What is the date of the incident?\n• Are there any witnesses?\n• Has an FIR been filed?\n\n*Note: This is a prototype. Connect to Lovable AI for real legal analysis.*`,
-        timestamp: new Date(),
-      };
-
-      setMessages((prev) => [...prev, assistantMessage]);
+      await sendMessage(content, messages);
     } catch (error) {
       toast.error("Failed to send message. Please try again.");
       console.error(error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -90,19 +77,39 @@ const Index = () => {
                   {caseType} Law Case
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  {messages.length} message{messages.length !== 1 ? "s" : ""}
+                  {messages.length} message{messages.length !== 1 ? "s" : ""} • Powered by AI
                 </p>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleReset}
-                className="gap-2"
-              >
-                <RotateCcw className="w-4 h-4" />
-                New Case
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowDocGenerator(!showDocGenerator)}
+                  className="gap-2"
+                >
+                  <FileText className="w-4 h-4" />
+                  Documents
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleReset}
+                  className="gap-2"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  New Case
+                </Button>
+              </div>
             </div>
+
+            {showDocGenerator && (
+              <div className="mb-4">
+                <DocumentGenerator
+                  messages={messages}
+                  caseType={caseType || 'Criminal'}
+                />
+              </div>
+            )}
 
             <Card className="flex-1 flex flex-col shadow-elegant">
               <ScrollArea className="flex-1 p-6" ref={scrollRef}>
@@ -113,8 +120,31 @@ const Index = () => {
                 ) : (
                   <div className="space-y-4">
                     {messages.map((message, index) => (
-                      <ChatMessage key={index} {...message} />
+                      <div key={index}>
+                        <ChatMessage {...message} />
+                        {message.role === 'assistant' && (
+                          <FeedbackButtons
+                            onFeedback={(rating) => {
+                              toast.success(rating === 1 ? 'Thank you for the feedback!' : 'Thanks, we\'ll improve');
+                            }}
+                          />
+                        )}
+                      </div>
                     ))}
+                    {isLoading && (
+                      <div className="flex gap-3 mb-4">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-law-gold flex items-center justify-center">
+                          <span className="text-xs font-semibold text-primary">AI</span>
+                        </div>
+                        <div className="bg-card border border-border rounded-2xl px-4 py-3">
+                          <div className="flex gap-1">
+                            <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                            <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                            <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </ScrollArea>
@@ -134,10 +164,13 @@ const Index = () => {
       <footer className="border-t border-border py-4">
         <div className="container mx-auto px-4 text-center text-xs text-muted-foreground">
           <p>
-            LawBoard AI Assistant • Prototype for Indian Law Analysis
+            LawBoard AI Assistant • Powered by Lovable AI & RAG Technology
           </p>
           <p className="mt-1">
-            This is an AI prototype. Always consult a qualified lawyer for legal advice.
+            Features: Real-time Streaming • Named Entity Recognition • Legal Document Generation • Semantic Search
+          </p>
+          <p className="mt-1 font-semibold">
+            ⚠️ This is informational guidance only. Always consult a qualified lawyer for legal advice.
           </p>
         </div>
       </footer>
