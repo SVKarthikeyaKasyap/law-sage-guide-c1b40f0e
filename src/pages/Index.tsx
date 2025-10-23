@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { Header } from "@/components/Header";
 import { ChatMessage } from "@/components/ChatMessage";
 import { ChatInput } from "@/components/ChatInput";
@@ -20,13 +20,19 @@ interface Message {
   timestamp: Date;
 }
 
+const generateConversationId = () => {
+  return `conv_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+};
+
 const Index = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [caseType, setCaseType] = useState<string | null>(null);
-  const [showDocGenerator, setShowDocGenerator] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  
+  const conversationId = useMemo(() => generateConversationId(), [caseType]);
 
   const { sendMessage, isLoading } = useStreamingChat({
+    conversationId,
     caseType: caseType || 'Criminal',
     onMessagesUpdate: setMessages
   });
@@ -59,7 +65,7 @@ const Index = () => {
   const handleReset = () => {
     setCaseType(null);
     setMessages([]);
-    toast.success("Conversation reset");
+    toast.success("Conversation reset. Select a new case type to start.");
   };
 
   return (
@@ -157,6 +163,7 @@ const Index = () => {
 
               <TabsContent value="documents" className="flex-1">
                 <DocumentGenerator
+                  conversationId={conversationId}
                   messages={messages}
                   caseType={caseType || 'Criminal'}
                 />
