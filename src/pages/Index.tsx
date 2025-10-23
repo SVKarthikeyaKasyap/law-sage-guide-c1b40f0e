@@ -5,10 +5,12 @@ import { ChatInput } from "@/components/ChatInput";
 import { CaseTypeSelector } from "@/components/CaseTypeSelector";
 import { FeedbackButtons } from "@/components/FeedbackButtons";
 import { DocumentGenerator } from "@/components/DocumentGenerator";
+import { DataScraperPanel } from "@/components/DataScraperPanel";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { RotateCcw, FileText } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { RotateCcw, FileText, Database } from "lucide-react";
 import { toast } from "sonner";
 import { useStreamingChat } from "@/hooks/useStreamingChat";
 
@@ -80,38 +82,32 @@ const Index = () => {
                   {messages.length} message{messages.length !== 1 ? "s" : ""} • Powered by AI
                 </p>
               </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowDocGenerator(!showDocGenerator)}
-                  className="gap-2"
-                >
-                  <FileText className="w-4 h-4" />
-                  Documents
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleReset}
-                  className="gap-2"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                  New Case
-                </Button>
-              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleReset}
+                className="gap-2"
+              >
+                <RotateCcw className="w-4 h-4" />
+                New Case
+              </Button>
             </div>
 
-            {showDocGenerator && (
-              <div className="mb-4">
-                <DocumentGenerator
-                  messages={messages}
-                  caseType={caseType || 'Criminal'}
-                />
-              </div>
-            )}
+            <Tabs defaultValue="chat" className="flex-1 flex flex-col">
+              <TabsList className="grid w-full grid-cols-3 mb-4">
+                <TabsTrigger value="chat">Chat</TabsTrigger>
+                <TabsTrigger value="documents">
+                  <FileText className="w-4 h-4 mr-2" />
+                  Documents
+                </TabsTrigger>
+                <TabsTrigger value="scraper">
+                  <Database className="w-4 h-4 mr-2" />
+                  Data Scraper
+                </TabsTrigger>
+              </TabsList>
 
-            <Card className="flex-1 flex flex-col shadow-elegant">
+              <TabsContent value="chat" className="flex-1 flex flex-col">
+                <Card className="flex-1 flex flex-col shadow-elegant">
               <ScrollArea className="flex-1 p-6" ref={scrollRef}>
                 {messages.length === 0 ? (
                   <div className="h-full flex items-center justify-center text-center text-muted-foreground">
@@ -157,6 +153,19 @@ const Index = () => {
                 />
               </div>
             </Card>
+              </TabsContent>
+
+              <TabsContent value="documents" className="flex-1">
+                <DocumentGenerator
+                  messages={messages}
+                  caseType={caseType || 'Criminal'}
+                />
+              </TabsContent>
+
+              <TabsContent value="scraper" className="flex-1">
+                <DataScraperPanel />
+              </TabsContent>
+            </Tabs>
           </>
         )}
       </main>
