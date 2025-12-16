@@ -1,9 +1,11 @@
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Legal corpus - IPC sections with embeddings metadata
+// Local legal corpus - IPC sections (fallback/default data)
 const LEGAL_CORPUS = [
   {
     section: "IPC Section 302",
@@ -91,27 +93,33 @@ const LEGAL_CORPUS = [
   }
 ];
 
-// Simple keyword-based retrieval function
-function retrieveRelevantSections(query: string, caseType: string, topK: number = 3): typeof LEGAL_CORPUS {
+interface LegalSection {
+  section: string;
+  title: string;
+  content: string;
+  keywords: string[];
+  category: string;
+  source?: string;
+}
+
+// Simple keyword-based retrieval function for local corpus
+function retrieveFromLocalCorpus(query: string, caseType: string, topK: number = 3): LegalSection[] {
   const queryLower = query.toLowerCase();
   const queryWords = queryLower.split(/\s+/).filter(w => w.length > 3);
   
   const scored = LEGAL_CORPUS.map(section => {
     let score = 0;
     
-    // Boost if case type matches
     if (section.category.toLowerCase().includes(caseType.toLowerCase())) {
       score += 5;
     }
     
-    // Keyword matching
     section.keywords.forEach(keyword => {
       if (queryLower.includes(keyword.toLowerCase())) {
         score += 3;
       }
     });
     
-    // Content matching
     queryWords.forEach(word => {
       if (section.content.toLowerCase().includes(word)) {
         score += 1;
@@ -121,13 +129,191 @@ function retrieveRelevantSections(query: string, caseType: string, topK: number 
       }
     });
     
-    return { ...section, score };
+    return { ...section, score, source: 'local' };
   });
   
   return scored
     .filter(s => s.score > 0)
     .sort((a, b) => b.score - a.score)
     .slice(0, topK);
+}
+
+// Search Supabase database for legal sections
+async function searchSupabaseDatabase(supabase: any, query: string, caseType: string, topK: number = 5): Promise<LegalSection[]> {
+  const queryLower = query.toLowerCase();
+  const queryWords = queryLower.split(/\s+/).filter(w => w.length > 3);
+  
+  try {
+    // Search by keywords and content
+    const { data, error } = await supabase
+      .from('legal_sections')
+      .select('*')
+      .or(queryWords.map(w => `content.ilike.%${w}%`).join(','))
+      .limit(topK * 2);
+    
+    if (error) {
+      console.error('Supabase search error:', error);
+      return [];
+    }
+    
+    if (!data || data.length === 0) {
+      return [];
+    }
+    
+    // Score and sort results
+    const scored = data.map((section: any) => {
+      let score = 0;
+      
+      if (section.category?.toLowerCase().includes(caseType.toLowerCase())) {
+        score += 5;
+      }
+      
+      (section.keywords || []).forEach((keyword: string) => {
+        if (queryLower.includes(keyword.toLowerCase())) {
+          score += 3;
+        }
+      });
+      
+      queryWords.forEach(word => {
+        if (section.content?.toLowerCase().includes(word)) {
+          score += 1;
+        }
+        if (section.title?.toLowerCase().includes(word)) {
+          score += 2;
+        }
+      });
+      
+      return { ...section, score, source: 'database' };
+    });
+    
+    return scored
+      .filter((s: any) => s.score > 0)
+      .sort((a: any, b: any) => b.score - a.score)
+      .slice(0, topK);
+  } catch (error) {
+    console.error('Database search error:', error);
+    return [];
+  }
+}
+
+// Scrape legal content from web and store in database
+async function scrapeAndStoreLegalContent(supabase: any, query: string): Promise<LegalSection[]> {
+  const supabaseUrl = Deno.env.get('SUPABASE_URL');
+  const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY');
+  
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.error('Missing Supabase credentials for scraping');
+    return [];
+  }
+  
+  try {
+    console.log('Initiating web scraping for query:', query);
+    
+    // Call the scrape-legal-content function
+    const scrapeResponse = await fetch(`${supabaseUrl}/functions/v1/scrape-legal-content`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${supabaseAnonKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ query }),
+    });
+    
+    if (!scrapeResponse.ok) {
+      console.error('Scrape function error:', scrapeResponse.status);
+      return [];
+    }
+    
+    const scrapeResult = await scrapeResponse.json();
+    
+    if (!scrapeResult.success || !scrapeResult.sections || scrapeResult.sections.length === 0) {
+      console.log('No sections scraped from web');
+      return [];
+    }
+    
+    console.log(`Scraped ${scrapeResult.sections.length} sections from web`);
+    
+    // Store scraped sections in database
+    const sectionsToStore = scrapeResult.sections.map((s: any) => ({
+      section: s.section,
+      title: s.title || 'Untitled',
+      content: s.content,
+      keywords: s.keywords || [],
+      category: s.category || 'General',
+      source: 'web_scraped'
+    }));
+    
+    // Upsert to avoid duplicates
+    for (const section of sectionsToStore) {
+      const { error } = await supabase
+        .from('legal_sections')
+        .upsert(section, { onConflict: 'section' });
+      
+      if (error) {
+        console.error('Error storing scraped section:', error);
+      }
+    }
+    
+    console.log('Stored scraped sections in database');
+    
+    return sectionsToStore.map((s: any) => ({ ...s, source: 'web_scraped' }));
+  } catch (error) {
+    console.error('Scraping error:', error);
+    return [];
+  }
+}
+
+// Main cascading search function
+async function cascadingLegalSearch(
+  supabase: any,
+  query: string,
+  caseType: string,
+  minResults: number = 3
+): Promise<{ sections: LegalSection[], sources: string[] }> {
+  const sources: string[] = [];
+  let allSections: LegalSection[] = [];
+  
+  // Step 1: Search local corpus
+  console.log('Step 1: Searching local corpus...');
+  const localResults = retrieveFromLocalCorpus(query, caseType, 5);
+  if (localResults.length > 0) {
+    sources.push('local_corpus');
+    allSections = [...allSections, ...localResults];
+    console.log(`Found ${localResults.length} results in local corpus`);
+  }
+  
+  // Step 2: Search Supabase database
+  if (allSections.length < minResults) {
+    console.log('Step 2: Searching database...');
+    const dbResults = await searchSupabaseDatabase(supabase, query, caseType, 5);
+    if (dbResults.length > 0) {
+      sources.push('database');
+      // Add only unique sections (by section name)
+      const existingSections = new Set(allSections.map(s => s.section));
+      const uniqueDbResults = dbResults.filter(s => !existingSections.has(s.section));
+      allSections = [...allSections, ...uniqueDbResults];
+      console.log(`Found ${dbResults.length} results in database (${uniqueDbResults.length} unique)`);
+    }
+  }
+  
+  // Step 3: Scrape from web if still not enough results
+  if (allSections.length < minResults) {
+    console.log('Step 3: Scraping from web...');
+    const scrapedResults = await scrapeAndStoreLegalContent(supabase, query);
+    if (scrapedResults.length > 0) {
+      sources.push('web_scraping');
+      const existingSections = new Set(allSections.map(s => s.section));
+      const uniqueScrapedResults = scrapedResults.filter(s => !existingSections.has(s.section));
+      allSections = [...allSections, ...uniqueScrapedResults];
+      console.log(`Scraped ${scrapedResults.length} results from web (${uniqueScrapedResults.length} unique)`);
+    }
+  }
+  
+  // Sort all results by relevance and limit
+  return {
+    sections: allSections.slice(0, 8),
+    sources
+  };
 }
 
 // NER tool definition for extracting case entities
@@ -159,10 +345,19 @@ Deno.serve(async (req) => {
 
   try {
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY not configured');
     }
+    
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+      throw new Error('Supabase credentials not configured');
+    }
+
+    // Create Supabase client with service role for database operations
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     const { messages, conversationId, caseType } = await req.json();
     
@@ -171,16 +366,31 @@ Deno.serve(async (req) => {
     }
 
     // Get the last user message for retrieval
-    const lastUserMessage = messages.filter(m => m.role === 'user').pop();
+    const lastUserMessage = messages.filter((m: any) => m.role === 'user').pop();
     const userQuery = lastUserMessage?.content || '';
 
-    // Retrieve relevant legal sections
-    const relevantSections = retrieveRelevantSections(userQuery, caseType || 'Criminal', 5);
+    // Perform cascading search
+    console.log('Starting cascading legal search for:', userQuery);
+    const { sections: relevantSections, sources } = await cascadingLegalSearch(
+      supabase,
+      userQuery,
+      caseType || 'Criminal',
+      3
+    );
+    
+    console.log(`Found ${relevantSections.length} relevant sections from sources: ${sources.join(', ')}`);
     
     // Build context from retrieved sections
-    const legalContext = relevantSections
-      .map(s => `**${s.section}: ${s.title}**\n${s.content}`)
-      .join('\n\n');
+    const legalContext = relevantSections.length > 0
+      ? relevantSections
+          .map(s => `**${s.section}: ${s.title}** [Source: ${s.source}]\n${s.content}`)
+          .join('\n\n')
+      : 'No specific legal provisions found. Please provide more details about your case.';
+
+    // Note about data sources
+    const sourcesNote = sources.length > 0
+      ? `\n\n*Data retrieved from: ${sources.map(s => s.replace('_', ' ')).join(', ')}*`
+      : '';
 
     // System prompt with legal expertise
     const systemPrompt = `You are an expert Indian legal assistant specializing in IPC (Indian Penal Code), CrPC (Code of Criminal Procedure), and Constitutional law.
@@ -199,9 +409,10 @@ Deno.serve(async (req) => {
 - Never provide definitive legal advice - always recommend consulting a qualified lawyer
 - Be empathetic and professional
 - Keep responses clear and concise
+- If relevant laws were scraped from web sources, mention that for transparency
 
 **Relevant Legal Provisions for this Case:**
-${legalContext}
+${legalContext}${sourcesNote}
 
 **Case Type:** ${caseType || 'Not specified'}
 
@@ -228,6 +439,7 @@ Remember: This is informational guidance only. Always advise users to consult wi
     console.log('Sending request to Lovable AI with context:', {
       messageCount: messages.length,
       relevantSectionsCount: relevantSections.length,
+      sources,
       caseType
     });
 
