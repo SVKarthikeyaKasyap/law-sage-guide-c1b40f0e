@@ -73,6 +73,42 @@ export type Database = {
           },
         ]
       }
+      legal_sections: {
+        Row: {
+          category: string | null
+          content: string
+          created_at: string
+          id: string
+          keywords: string[] | null
+          section: string
+          source: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          content: string
+          created_at?: string
+          id?: string
+          keywords?: string[] | null
+          section: string
+          source?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          content?: string
+          created_at?: string
+          id?: string
+          keywords?: string[] | null
+          section?: string
+          source?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       message_feedback: {
         Row: {
           comment: string | null
