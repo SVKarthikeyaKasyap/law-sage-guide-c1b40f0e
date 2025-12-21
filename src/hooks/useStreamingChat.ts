@@ -10,12 +10,14 @@ interface Message {
 interface UseStreamingChatProps {
   conversationId?: string;
   caseType: string;
+  country?: string;
   onMessagesUpdate: (messages: Message[]) => void;
 }
 
 export const useStreamingChat = ({
   conversationId,
   caseType,
+  country = 'india',
   onMessagesUpdate
 }: UseStreamingChatProps) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -49,7 +51,8 @@ export const useStreamingChat = ({
             content: m.content
           })),
           conversationId,
-          caseType
+          caseType,
+          country
         }),
       });
 
@@ -152,7 +155,7 @@ export const useStreamingChat = ({
     } finally {
       setIsLoading(false);
     }
-  }, [conversationId, caseType, onMessagesUpdate]);
+  }, [conversationId, caseType, country, onMessagesUpdate]);
 
   return { sendMessage, isLoading };
 };
