@@ -3,6 +3,7 @@ import { Header } from "@/components/Header";
 import { ChatMessage } from "@/components/ChatMessage";
 import { ChatInput } from "@/components/ChatInput";
 import { CaseTypeSelector } from "@/components/CaseTypeSelector";
+import { UserCaseSelector } from "@/components/UserCaseSelector";
 import { FeedbackButtons } from "@/components/FeedbackButtons";
 import { DocumentGenerator } from "@/components/DocumentGenerator";
 import { DataScraperPanel } from "@/components/DataScraperPanel";
@@ -13,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RotateCcw, FileText, Database } from "lucide-react";
 import { toast } from "sonner";
 import { useStreamingChat } from "@/hooks/useStreamingChat";
+import { UserRole } from "@/components/RoleSwitcher";
 
 interface Message {
   role: "user" | "assistant";
@@ -27,6 +29,7 @@ const generateConversationId = () => {
 const Index = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [caseType, setCaseType] = useState<string | null>(null);
+  const [role, setRole] = useState<UserRole>("user");
   const scrollRef = useRef<HTMLDivElement>(null);
   
   const conversationId = useMemo(() => generateConversationId(), [caseType]);
@@ -43,11 +46,32 @@ const Index = () => {
     }
   }, [messages]);
 
+  const handleRoleChange = (newRole: UserRole) => {
+    if (newRole !== role) {
+      setRole(newRole);
+      setCaseType(null);
+      setMessages([]);
+    }
+  };
+
   const handleCaseTypeSelect = (type: string) => {
     setCaseType(type);
+    
+    let welcomeContent = "";
+    
+    if (role === "user") {
+      if (type === "general-emergency") {
+        welcomeContent = `I understand you're in an emergency situation. I'm here to help guide you through this.\n\n**Your Safety Comes First**\n\nIf you've witnessed a crime (like murder, assault, etc.), please know:\n• **You are protected by law as a witness** under Section 195A IPC and Witness Protection Scheme 2018\n• Your identity can be kept confidential\n• You can seek police protection if you feel threatened\n• Tampering with witnesses is a punishable offense\n\n**Please describe what happened**, and I'll guide you on:\n• Your legal rights and protections\n• Steps to report safely\n• Available support and protection measures\n\n*Stay calm. I'm here to help you through this.*`;
+      } else if (type === "transport") {
+        welcomeContent = `I understand you're facing a travel or immigration issue. I'm here to help.\n\n**Common Issues I Can Help With:**\n• Visa expired while abroad\n• Lost or stolen passport\n• Detained at immigration\n• Emergency travel documents\n\n**Immediate Steps:**\n• Stay calm and don't panic\n• Contact your country's embassy or consulate\n• Keep all your documents safe\n• Note down important contact numbers\n\n**Please describe your situation** - where you are, what happened, and what documents you have. I'll provide specific guidance for your case.\n\n*Note: This is informational guidance. Contact your embassy for official assistance.*`;
+      }
+    } else {
+      welcomeContent = `I'll help you with your ${type} case. I'm an AI assistant powered by advanced language models, trained on Indian law including the IPC, CrPC, and Constitution.\n\n**How I can help:**\n• Identify applicable legal provisions\n• Guide you through case facts gathering\n• Explain legal procedures step-by-step\n• Generate draft legal documents (FIR, notices, complaints)\n\n**Please describe the facts of your case, and I'll analyze it for you.**\n\n*Note: This is informational guidance only. Always consult a qualified lawyer for legal advice.*`;
+    }
+    
     const welcomeMessage: Message = {
       role: "assistant",
-      content: `I'll help you with your ${type} case. I'm an AI assistant powered by advanced language models, trained on Indian law including the IPC, CrPC, and Constitution.\n\n**How I can help:**\n• Identify applicable legal provisions\n• Guide you through case facts gathering\n• Explain legal procedures step-by-step\n• Generate draft legal documents (FIR, notices, complaints)\n\n**Please describe the facts of your case, and I'll analyze it for you.**\n\n*Note: This is informational guidance only. Always consult a qualified lawyer for legal advice.*`,
+      content: welcomeContent,
       timestamp: new Date(),
     };
     setMessages([welcomeMessage]);
@@ -70,12 +94,16 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Header />
+      <Header role={role} onRoleChange={handleRoleChange} />
 
       <main className="flex-1 container mx-auto px-4 py-6 flex flex-col max-w-5xl">
         {!caseType ? (
           <div className="flex-1 flex items-center justify-center">
-            <CaseTypeSelector onSelect={handleCaseTypeSelect} />
+            {role === "user" ? (
+              <UserCaseSelector onSelect={handleCaseTypeSelect} />
+            ) : (
+              <CaseTypeSelector onSelect={handleCaseTypeSelect} />
+            )}
           </div>
         ) : (
           <>
