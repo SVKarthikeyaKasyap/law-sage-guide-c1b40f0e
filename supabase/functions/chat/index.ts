@@ -5,93 +5,82 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Local legal corpus - IPC sections (fallback/default data)
-const LEGAL_CORPUS = [
-  {
-    section: "IPC Section 302",
-    title: "Murder",
-    content: "Whoever commits murder shall be punished with death or imprisonment for life, and shall also be liable to fine.",
-    keywords: ["murder", "death", "life imprisonment", "killing", "homicide"],
-    category: "Criminal"
-  },
-  {
-    section: "IPC Section 304",
-    title: "Culpable Homicide Not Amounting to Murder",
-    content: "Whoever commits culpable homicide not amounting to murder shall be punished with imprisonment for life, or imprisonment for a term which may extend to ten years, and shall also be liable to fine.",
-    keywords: ["culpable homicide", "manslaughter", "killing", "not murder"],
-    category: "Criminal"
-  },
-  {
-    section: "IPC Section 323",
-    title: "Punishment for Voluntarily Causing Hurt",
-    content: "Whoever voluntarily causes hurt shall be punished with imprisonment of either description for a term which may extend to one year, or with fine which may extend to one thousand rupees, or with both.",
-    keywords: ["hurt", "assault", "injury", "violence", "beating"],
-    category: "Criminal"
-  },
-  {
-    section: "IPC Section 324",
-    title: "Voluntarily Causing Hurt by Dangerous Weapons",
-    content: "Whoever voluntarily causes hurt by means of any instrument for shooting, stabbing or cutting, or any instrument which, used as weapon, is likely to cause death, shall be punished with imprisonment of either description for a term which may extend to three years, or with fine, or with both.",
-    keywords: ["weapon", "dangerous weapon", "stabbing", "shooting", "hurt", "knife", "gun"],
-    category: "Criminal"
-  },
-  {
-    section: "IPC Section 354",
-    title: "Assault or Criminal Force to Woman with Intent to Outrage her Modesty",
-    content: "Whoever assaults or uses criminal force to any woman, intending to outrage or knowing it to be likely that he will thereby outrage her modesty, shall be punished with imprisonment of either description for a term which shall not be less than one year but which may extend to five years, and shall also be liable to fine.",
-    keywords: ["modesty", "woman", "assault", "outrage", "harassment", "molestation"],
-    category: "Criminal"
-  },
-  {
-    section: "IPC Section 376",
-    title: "Punishment for Rape",
-    content: "Whoever commits rape shall be punished with rigorous imprisonment for a term which shall not be less than ten years, but which may extend to imprisonment for life, and shall also be liable to fine.",
-    keywords: ["rape", "sexual assault", "sexual violence", "woman", "consent"],
-    category: "Criminal"
-  },
-  {
-    section: "IPC Section 379",
-    title: "Punishment for Theft",
-    content: "Whoever commits theft shall be punished with imprisonment of either description for a term which may extend to three years, or with fine, or with both.",
-    keywords: ["theft", "stealing", "property", "dishonest", "movable property"],
-    category: "Criminal"
-  },
-  {
-    section: "IPC Section 420",
-    title: "Cheating and Dishonestly Inducing Delivery of Property",
-    content: "Whoever cheats and thereby dishonestly induces the person deceived to deliver any property to any person, or to make, alter or destroy the whole or any part of a valuable security, shall be punished with imprisonment of either description for a term which may extend to seven years, and shall also be liable to fine.",
-    keywords: ["cheating", "fraud", "dishonest", "deception", "property", "scam"],
-    category: "Criminal"
-  },
-  {
-    section: "IPC Section 498A",
-    title: "Cruelty by Husband or Relatives of Husband",
-    content: "Whoever, being the husband or the relative of the husband of a woman, subjects such woman to cruelty shall be punished with imprisonment for a term which may extend to three years and shall also be liable to fine.",
-    keywords: ["dowry", "cruelty", "husband", "domestic violence", "harassment", "torture"],
-    category: "Criminal"
-  },
-  {
-    section: "CrPC Section 154",
-    title: "Information in Cognizable Cases",
-    content: "Every information relating to the commission of a cognizable offence, if given orally to an officer in charge of a police station, shall be reduced to writing by him or under his direction, and be read over to the informant.",
-    keywords: ["FIR", "police", "complaint", "cognizable", "information", "report"],
-    category: "Criminal Procedure"
-  },
-  {
-    section: "CrPC Section 156",
-    title: "Power of Police Officer to Investigate Cognizable Case",
-    content: "Any officer in charge of a police station may, without the order of a Magistrate, investigate any cognizable case which a Court having jurisdiction over the local area within the limits of such station would have power to inquire into or try.",
-    keywords: ["investigation", "police", "cognizable", "power", "inquiry"],
-    category: "Criminal Procedure"
-  },
-  {
-    section: "CrPC Section 41",
-    title: "When Police May Arrest Without Warrant",
-    content: "Any police officer may without an order from a Magistrate and without a warrant, arrest any person who commits a cognizable offence in his presence, or against whom a reasonable complaint has been made.",
-    keywords: ["arrest", "warrant", "police", "cognizable", "detention"],
-    category: "Criminal Procedure"
-  }
-];
+// Multi-country legal corpus
+const LEGAL_CORPUS: Record<string, LegalSection[]> = {
+  india: [
+    { section: "IPC Section 302", title: "Murder", content: "Whoever commits murder shall be punished with death or imprisonment for life, and shall also be liable to fine.", keywords: ["murder", "death", "life imprisonment", "killing", "homicide"], category: "Criminal" },
+    { section: "IPC Section 304", title: "Culpable Homicide Not Amounting to Murder", content: "Whoever commits culpable homicide not amounting to murder shall be punished with imprisonment for life, or imprisonment for a term which may extend to ten years, and shall also be liable to fine.", keywords: ["culpable homicide", "manslaughter", "killing", "not murder"], category: "Criminal" },
+    { section: "IPC Section 323", title: "Punishment for Voluntarily Causing Hurt", content: "Whoever voluntarily causes hurt shall be punished with imprisonment of either description for a term which may extend to one year, or with fine which may extend to one thousand rupees, or with both.", keywords: ["hurt", "assault", "injury", "violence", "beating"], category: "Criminal" },
+    { section: "IPC Section 324", title: "Voluntarily Causing Hurt by Dangerous Weapons", content: "Whoever voluntarily causes hurt by means of any instrument for shooting, stabbing or cutting, or any instrument which, used as weapon, is likely to cause death, shall be punished with imprisonment of either description for a term which may extend to three years, or with fine, or with both.", keywords: ["weapon", "dangerous weapon", "stabbing", "shooting", "hurt", "knife", "gun"], category: "Criminal" },
+    { section: "IPC Section 354", title: "Assault or Criminal Force to Woman", content: "Whoever assaults or uses criminal force to any woman, intending to outrage or knowing it to be likely that he will thereby outrage her modesty, shall be punished with imprisonment of either description for a term which shall not be less than one year but which may extend to five years, and shall also be liable to fine.", keywords: ["modesty", "woman", "assault", "outrage", "harassment", "molestation"], category: "Criminal" },
+    { section: "IPC Section 376", title: "Punishment for Rape", content: "Whoever commits rape shall be punished with rigorous imprisonment for a term which shall not be less than ten years, but which may extend to imprisonment for life, and shall also be liable to fine.", keywords: ["rape", "sexual assault", "sexual violence", "woman", "consent"], category: "Criminal" },
+    { section: "IPC Section 379", title: "Punishment for Theft", content: "Whoever commits theft shall be punished with imprisonment of either description for a term which may extend to three years, or with fine, or with both.", keywords: ["theft", "stealing", "property", "dishonest", "movable property"], category: "Criminal" },
+    { section: "IPC Section 420", title: "Cheating and Dishonestly Inducing Delivery of Property", content: "Whoever cheats and thereby dishonestly induces the person deceived to deliver any property to any person, or to make, alter or destroy the whole or any part of a valuable security, shall be punished with imprisonment of either description for a term which may extend to seven years, and shall also be liable to fine.", keywords: ["cheating", "fraud", "dishonest", "deception", "property", "scam"], category: "Criminal" },
+    { section: "IPC Section 498A", title: "Cruelty by Husband or Relatives of Husband", content: "Whoever, being the husband or the relative of the husband of a woman, subjects such woman to cruelty shall be punished with imprisonment for a term which may extend to three years and shall also be liable to fine.", keywords: ["dowry", "cruelty", "husband", "domestic violence", "harassment", "torture"], category: "Criminal" },
+    { section: "IPC Section 195A", title: "Witness Protection", content: "Whoever threatens or induces any person to give false evidence or withhold true evidence shall be punished. Witnesses are protected under the Witness Protection Scheme 2018.", keywords: ["witness", "protection", "testimony", "threat", "evidence"], category: "Criminal" },
+    { section: "CrPC Section 154", title: "Information in Cognizable Cases (FIR)", content: "Every information relating to the commission of a cognizable offence, if given orally to an officer in charge of a police station, shall be reduced to writing by him or under his direction, and be read over to the informant.", keywords: ["FIR", "police", "complaint", "cognizable", "information", "report"], category: "Criminal Procedure" },
+    { section: "CrPC Section 156", title: "Power of Police Officer to Investigate", content: "Any officer in charge of a police station may, without the order of a Magistrate, investigate any cognizable case which a Court having jurisdiction over the local area within the limits of such station would have power to inquire into or try.", keywords: ["investigation", "police", "cognizable", "power", "inquiry"], category: "Criminal Procedure" },
+    { section: "CrPC Section 41", title: "When Police May Arrest Without Warrant", content: "Any police officer may without an order from a Magistrate and without a warrant, arrest any person who commits a cognizable offence in his presence, or against whom a reasonable complaint has been made.", keywords: ["arrest", "warrant", "police", "cognizable", "detention"], category: "Criminal Procedure" },
+    { section: "Foreigners Act Section 14", title: "Penalty for Overstaying Visa", content: "Any foreigner who remains in India beyond the period for which the visa was granted, or fails to comply with the conditions of the visa, shall be punishable with imprisonment up to five years and fine.", keywords: ["visa", "overstay", "foreigner", "immigration", "passport", "expired"], category: "Immigration" },
+    { section: "Passport Act Section 12", title: "Offences and Penalties", content: "Whoever makes false representation to obtain passport, or uses passport issued to another person shall be punished with imprisonment up to two years or fine or both.", keywords: ["passport", "false", "fraud", "travel", "document"], category: "Immigration" },
+  ],
+  usa: [
+    { section: "18 U.S.C. § 1111", title: "Murder", content: "Murder is the unlawful killing of a human being with malice aforethought. First degree murder is punishable by death or life imprisonment. Second degree murder is punishable by imprisonment for any term of years or for life.", keywords: ["murder", "homicide", "killing", "death penalty", "life imprisonment"], category: "Criminal" },
+    { section: "18 U.S.C. § 113", title: "Assault", content: "Assault with intent to commit murder or serious bodily injury is punishable by imprisonment of up to 20 years. Simple assault is punishable by fine or imprisonment up to 6 months.", keywords: ["assault", "battery", "injury", "violence", "attack"], category: "Criminal" },
+    { section: "18 U.S.C. § 2241", title: "Sexual Abuse", content: "Whoever knowingly causes another person to engage in a sexual act by using force against that person shall be fined and imprisoned for any term of years or for life.", keywords: ["sexual", "abuse", "rape", "assault", "force"], category: "Criminal" },
+    { section: "18 U.S.C. § 2111", title: "Robbery", content: "Whoever by force and violence, or by intimidation, takes from the person or presence of another anything of value, shall be imprisoned not more than fifteen years.", keywords: ["robbery", "theft", "force", "violence", "stealing"], category: "Criminal" },
+    { section: "18 U.S.C. § 1341", title: "Mail Fraud", content: "Whoever devises any scheme to defraud or for obtaining money by means of false pretenses using mail shall be fined or imprisoned not more than 20 years, or both.", keywords: ["fraud", "mail", "scam", "deception", "money"], category: "Criminal" },
+    { section: "8 U.S.C. § 1227", title: "Deportable Aliens", content: "Any alien who at the time of entry was within one or more classes of deportable aliens, or who has violated immigration law, is deportable.", keywords: ["deportation", "visa", "immigration", "alien", "removal"], category: "Immigration" },
+    { section: "8 U.S.C. § 1182", title: "Inadmissible Aliens", content: "Aliens who are unlawfully present for more than 180 days but less than 1 year face a 3-year bar from admission. Those unlawfully present for 1 year or more face a 10-year bar.", keywords: ["overstay", "visa", "unlawful", "bar", "admission"], category: "Immigration" },
+    { section: "8 U.S.C. § 1324c", title: "Document Fraud", content: "It is unlawful to forge, counterfeit, alter, or falsely make any immigration document. Penalties include fines and imprisonment.", keywords: ["document", "fraud", "passport", "forgery", "immigration"], category: "Immigration" },
+    { section: "Miranda v. Arizona", title: "Right to Remain Silent", content: "Before custodial interrogation, police must inform suspects of their right to remain silent, that anything said can be used against them, right to an attorney, and if unable to afford one, an attorney will be appointed.", keywords: ["miranda", "rights", "silence", "attorney", "interrogation", "arrest"], category: "Constitutional" },
+    { section: "Fourth Amendment", title: "Protection Against Unreasonable Searches", content: "The right of the people to be secure in their persons, houses, papers, and effects, against unreasonable searches and seizures, shall not be violated.", keywords: ["search", "seizure", "warrant", "privacy", "police"], category: "Constitutional" },
+    { section: "Fifth Amendment", title: "Right Against Self-Incrimination", content: "No person shall be compelled in any criminal case to be a witness against himself, nor be deprived of life, liberty, or property, without due process of law.", keywords: ["self-incrimination", "due process", "rights", "testimony"], category: "Constitutional" },
+    { section: "Sixth Amendment", title: "Right to Speedy Trial and Counsel", content: "In all criminal prosecutions, the accused shall enjoy the right to a speedy and public trial, to be informed of the accusations, to confront witnesses, and to have the assistance of counsel.", keywords: ["trial", "counsel", "attorney", "speedy", "jury"], category: "Constitutional" },
+  ],
+  russia: [
+    { section: "Article 105 Criminal Code RF", title: "Murder", content: "Murder, that is, the intentional causing of death to another person, shall be punishable by deprivation of liberty for a term of six to fifteen years. Aggravated murder is punishable by imprisonment from eight to twenty years or life imprisonment.", keywords: ["murder", "убийство", "death", "killing", "homicide"], category: "Criminal" },
+    { section: "Article 111 Criminal Code RF", title: "Intentional Infliction of Grave Bodily Harm", content: "Intentional infliction of grave bodily harm dangerous to human life shall be punishable by deprivation of liberty for a term of up to eight years.", keywords: ["bodily harm", "injury", "assault", "violence"], category: "Criminal" },
+    { section: "Article 131 Criminal Code RF", title: "Rape", content: "Rape, that is, sexual intercourse with the use of violence or threats, or using the helpless state of the victim, shall be punishable by deprivation of liberty for a term of three to six years.", keywords: ["rape", "sexual", "violence", "assault"], category: "Criminal" },
+    { section: "Article 158 Criminal Code RF", title: "Theft", content: "Theft, that is, the secret stealing of another's property, shall be punishable by a fine, or by compulsory works, or by deprivation of liberty for up to two years.", keywords: ["theft", "stealing", "property", "кража"], category: "Criminal" },
+    { section: "Article 159 Criminal Code RF", title: "Fraud", content: "Fraud, that is, the stealing of another's property or the acquisition of rights to another's property by deceit or abuse of trust, shall be punishable by a fine or imprisonment.", keywords: ["fraud", "deceit", "мошенничество", "scam"], category: "Criminal" },
+    { section: "Federal Law No. 115-FZ", title: "Legal Status of Foreign Citizens", content: "Foreign citizens must have valid visa and migration card. Overstaying visa results in fines from 2,000 to 5,000 rubles and possible deportation with re-entry ban.", keywords: ["visa", "foreigner", "migration", "виза", "deportation"], category: "Immigration" },
+    { section: "Article 18.8 Administrative Code", title: "Violation of Stay Rules", content: "Violation of rules of entry or stay by a foreign citizen in Russia entails a fine from 2,000 to 5,000 rubles with administrative deportation.", keywords: ["overstay", "violation", "fine", "deportation"], category: "Immigration" },
+    { section: "Article 322 Criminal Code RF", title: "Illegal Border Crossing", content: "Illegal crossing of the State Border of the Russian Federation shall be punishable by a fine or imprisonment for up to two years.", keywords: ["border", "illegal", "crossing", "граница"], category: "Immigration" },
+  ],
+  china: [
+    { section: "Article 232 Criminal Law PRC", title: "Intentional Homicide", content: "Whoever intentionally kills another person shall be sentenced to death, life imprisonment or fixed-term imprisonment of not less than 10 years. If circumstances are relatively minor, shall be sentenced to fixed-term imprisonment of 3 to 10 years.", keywords: ["murder", "homicide", "killing", "death", "故意杀人"], category: "Criminal" },
+    { section: "Article 234 Criminal Law PRC", title: "Intentional Injury", content: "Whoever intentionally injures another person shall be sentenced to fixed-term imprisonment of not more than 3 years or criminal detention. If serious injury caused, imprisonment of 3 to 10 years.", keywords: ["injury", "assault", "harm", "故意伤害"], category: "Criminal" },
+    { section: "Article 236 Criminal Law PRC", title: "Rape", content: "Whoever rapes a woman by violence, coercion or other means shall be sentenced to fixed-term imprisonment of 3 to 10 years. Aggravated cases may result in more than 10 years, life imprisonment, or death.", keywords: ["rape", "sexual", "violence", "强奸"], category: "Criminal" },
+    { section: "Article 264 Criminal Law PRC", title: "Theft", content: "Whoever steals a relatively large amount of public or private property or commits theft repeatedly shall be sentenced to fixed-term imprisonment of not more than 3 years, criminal detention or surveillance.", keywords: ["theft", "stealing", "property", "盗窃"], category: "Criminal" },
+    { section: "Article 266 Criminal Law PRC", title: "Fraud", content: "Whoever defrauds public or private property of a relatively large amount shall be sentenced to fixed-term imprisonment of not more than 3 years.", keywords: ["fraud", "scam", "deception", "诈骗"], category: "Criminal" },
+    { section: "Exit-Entry Administration Law Art. 78", title: "Illegal Stay", content: "Foreigners who illegally stay in China shall be given a warning and may be fined up to 10,000 yuan per day (maximum 50,000 yuan), or detained for 5 to 15 days. May also be deported.", keywords: ["visa", "overstay", "foreigner", "illegal", "签证"], category: "Immigration" },
+    { section: "Exit-Entry Administration Law Art. 81", title: "Deportation", content: "Foreigners who violate this Law may be deported. Those deported shall not be allowed to enter China for 1 to 5 years from the date of deportation.", keywords: ["deportation", "ban", "violation", "遣返"], category: "Immigration" },
+    { section: "Regulations on Foreigners Art. 42", title: "Visa Extension", content: "Foreigners who need to extend their stay shall apply to the local exit-entry administration authority 7 days before the expiry of their visa.", keywords: ["visa", "extension", "application", "延期"], category: "Immigration" },
+  ],
+  japan: [
+    { section: "Penal Code Article 199", title: "Homicide", content: "A person who kills another shall be punished by the death penalty or imprisonment with work for life or for a definite term of not less than 5 years.", keywords: ["murder", "homicide", "killing", "殺人"], category: "Criminal" },
+    { section: "Penal Code Article 204", title: "Injury", content: "A person who injures the body of another shall be punished by imprisonment with work for not more than 15 years or a fine of not more than 500,000 yen.", keywords: ["injury", "assault", "harm", "傷害"], category: "Criminal" },
+    { section: "Penal Code Article 177", title: "Forcible Sexual Intercourse", content: "A person who, through assault or intimidation, has sexual intercourse with a person of 13 years of age or above shall be punished by imprisonment for a definite term of not less than 5 years.", keywords: ["rape", "sexual", "assault", "強制性交"], category: "Criminal" },
+    { section: "Penal Code Article 235", title: "Theft", content: "A person who steals the property of another commits the crime of theft and shall be punished by imprisonment with work for not more than 10 years or a fine of not more than 500,000 yen.", keywords: ["theft", "stealing", "property", "窃盗"], category: "Criminal" },
+    { section: "Penal Code Article 246", title: "Fraud", content: "A person who defrauds another of property shall be punished by imprisonment with work for not more than 10 years.", keywords: ["fraud", "scam", "deception", "詐欺"], category: "Criminal" },
+    { section: "Immigration Control Act Art. 70", title: "Illegal Stay", content: "A foreign national who stays in Japan beyond their period of stay without permission shall be punished by imprisonment with work for not more than 3 years or a fine of not more than 3 million yen.", keywords: ["visa", "overstay", "illegal", "在留"], category: "Immigration" },
+    { section: "Immigration Control Act Art. 24", title: "Deportation", content: "Foreign nationals who have violated immigration laws may be subject to deportation proceedings. Those deported may be banned from re-entry for 5 years, or 10 years for repeat offenders.", keywords: ["deportation", "ban", "violation", "退去強制"], category: "Immigration" },
+    { section: "Immigration Control Act Art. 22-4", title: "Status of Residence", content: "Foreign nationals must maintain valid status of residence. Those who lose their status must leave Japan or apply for a different status within the prescribed period.", keywords: ["visa", "status", "residence", "在留資格"], category: "Immigration" },
+  ],
+  uk: [
+    { section: "Murder (Common Law)", title: "Murder", content: "Murder is the unlawful killing of a human being under the Queen's Peace with malice aforethought. The mandatory sentence for murder is life imprisonment.", keywords: ["murder", "homicide", "killing", "life imprisonment"], category: "Criminal" },
+    { section: "Offences Against the Person Act 1861 s.18", title: "Wounding with Intent", content: "Whosoever shall unlawfully and maliciously wound or cause grievous bodily harm to any person with intent to do grievous bodily harm shall be liable to imprisonment for life.", keywords: ["wounding", "gbh", "injury", "assault"], category: "Criminal" },
+    { section: "Sexual Offences Act 2003 s.1", title: "Rape", content: "A person commits rape if he intentionally penetrates the vagina, anus or mouth of another person with his penis, and that person does not consent, and he does not reasonably believe that person consents. Maximum sentence is life imprisonment.", keywords: ["rape", "sexual", "assault", "consent"], category: "Criminal" },
+    { section: "Theft Act 1968 s.1", title: "Theft", content: "A person is guilty of theft if he dishonestly appropriates property belonging to another with the intention of permanently depriving the other of it. Maximum sentence is 7 years imprisonment.", keywords: ["theft", "stealing", "property", "dishonest"], category: "Criminal" },
+    { section: "Fraud Act 2006 s.2", title: "Fraud by False Representation", content: "A person is guilty of fraud if he dishonestly makes a false representation with intent to make a gain for himself or cause loss to another. Maximum sentence is 10 years imprisonment.", keywords: ["fraud", "false", "representation", "scam"], category: "Criminal" },
+    { section: "Immigration Act 1971 s.24", title: "Illegal Entry and Overstaying", content: "A person who knowingly enters the UK without leave, or overstays their leave, is guilty of an offence. Penalties include up to 6 months imprisonment or a fine.", keywords: ["visa", "overstay", "illegal", "immigration"], category: "Immigration" },
+    { section: "Immigration Act 1971 s.3", title: "Deportation", content: "The Secretary of State may deport a person if deemed conducive to the public good, if the person has been convicted of an offence punishable with imprisonment and recommended for deportation by the court.", keywords: ["deportation", "removal", "public good"], category: "Immigration" },
+    { section: "UK Borders Act 2007 s.32", title: "Automatic Deportation", content: "A foreign criminal who is sentenced to imprisonment for 12 months or more shall be automatically deported unless exceptions apply.", keywords: ["deportation", "criminal", "automatic", "sentence"], category: "Immigration" },
+    { section: "Police and Criminal Evidence Act 1984", title: "Rights on Arrest", content: "Upon arrest, you have the right to remain silent, to have someone informed of your arrest, to consult a solicitor privately, and to read the Codes of Practice.", keywords: ["arrest", "rights", "solicitor", "police", "caution"], category: "Criminal Procedure" },
+    { section: "Human Rights Act 1998 Art. 6", title: "Right to Fair Trial", content: "Everyone is entitled to a fair and public hearing within a reasonable time by an independent and impartial tribunal. Everyone charged with a criminal offence shall be presumed innocent until proved guilty.", keywords: ["fair trial", "rights", "innocent", "hearing"], category: "Constitutional" },
+  ]
+};
 
 interface LegalSection {
   section: string;
@@ -102,12 +91,24 @@ interface LegalSection {
   source?: string;
 }
 
+// Country info for system prompts
+const COUNTRY_INFO: Record<string, { name: string; lawSystem: string }> = {
+  india: { name: "India", lawSystem: "Indian Penal Code (IPC), CrPC, and Constitution" },
+  usa: { name: "United States", lawSystem: "US Code, State Laws, and Constitutional Rights" },
+  russia: { name: "Russia", lawSystem: "Criminal Code of the Russian Federation" },
+  china: { name: "China", lawSystem: "Criminal Law of the People's Republic of China" },
+  japan: { name: "Japan", lawSystem: "Japanese Penal Code and Immigration Control Act" },
+  uk: { name: "United Kingdom", lawSystem: "Common Law, Statutory Law, and Human Rights Act" }
+};
+
 // Simple keyword-based retrieval function for local corpus
-function retrieveFromLocalCorpus(query: string, caseType: string, topK: number = 3): LegalSection[] {
+function retrieveFromLocalCorpus(query: string, caseType: string, country: string, topK: number = 5): LegalSection[] {
   const queryLower = query.toLowerCase();
   const queryWords = queryLower.split(/\s+/).filter(w => w.length > 3);
   
-  const scored = LEGAL_CORPUS.map(section => {
+  const countryCorpus = LEGAL_CORPUS[country] || LEGAL_CORPUS['india'];
+  
+  const scored = countryCorpus.map(section => {
     let score = 0;
     
     if (section.category.toLowerCase().includes(caseType.toLowerCase())) {
@@ -139,12 +140,11 @@ function retrieveFromLocalCorpus(query: string, caseType: string, topK: number =
 }
 
 // Search Supabase database for legal sections
-async function searchSupabaseDatabase(supabase: any, query: string, caseType: string, topK: number = 5): Promise<LegalSection[]> {
+async function searchSupabaseDatabase(supabase: any, query: string, caseType: string, country: string, topK: number = 5): Promise<LegalSection[]> {
   const queryLower = query.toLowerCase();
   const queryWords = queryLower.split(/\s+/).filter(w => w.length > 3);
   
   try {
-    // Search by keywords and content
     const { data, error } = await supabase
       .from('legal_sections')
       .select('*')
@@ -160,7 +160,6 @@ async function searchSupabaseDatabase(supabase: any, query: string, caseType: st
       return [];
     }
     
-    // Score and sort results
     const scored = data.map((section: any) => {
       let score = 0;
       
@@ -196,86 +195,20 @@ async function searchSupabaseDatabase(supabase: any, query: string, caseType: st
   }
 }
 
-// Scrape legal content from web and store in database
-async function scrapeAndStoreLegalContent(supabase: any, query: string): Promise<LegalSection[]> {
-  const supabaseUrl = Deno.env.get('SUPABASE_URL');
-  const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY');
-  
-  if (!supabaseUrl || !supabaseAnonKey) {
-    console.error('Missing Supabase credentials for scraping');
-    return [];
-  }
-  
-  try {
-    console.log('Initiating web scraping for query:', query);
-    
-    // Call the scrape-legal-content function
-    const scrapeResponse = await fetch(`${supabaseUrl}/functions/v1/scrape-legal-content`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${supabaseAnonKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ query }),
-    });
-    
-    if (!scrapeResponse.ok) {
-      console.error('Scrape function error:', scrapeResponse.status);
-      return [];
-    }
-    
-    const scrapeResult = await scrapeResponse.json();
-    
-    if (!scrapeResult.success || !scrapeResult.sections || scrapeResult.sections.length === 0) {
-      console.log('No sections scraped from web');
-      return [];
-    }
-    
-    console.log(`Scraped ${scrapeResult.sections.length} sections from web`);
-    
-    // Store scraped sections in database
-    const sectionsToStore = scrapeResult.sections.map((s: any) => ({
-      section: s.section,
-      title: s.title || 'Untitled',
-      content: s.content,
-      keywords: s.keywords || [],
-      category: s.category || 'General',
-      source: 'web_scraped'
-    }));
-    
-    // Upsert to avoid duplicates
-    for (const section of sectionsToStore) {
-      const { error } = await supabase
-        .from('legal_sections')
-        .upsert(section, { onConflict: 'section' });
-      
-      if (error) {
-        console.error('Error storing scraped section:', error);
-      }
-    }
-    
-    console.log('Stored scraped sections in database');
-    
-    return sectionsToStore.map((s: any) => ({ ...s, source: 'web_scraped' }));
-  } catch (error) {
-    console.error('Scraping error:', error);
-    return [];
-  }
-}
-
 // Main cascading search function
 async function cascadingLegalSearch(
   supabase: any,
   query: string,
   caseType: string,
+  country: string,
   minResults: number = 3
 ): Promise<{ sections: LegalSection[], sources: string[] }> {
   const sources: string[] = [];
   let allSections: LegalSection[] = [];
   
   // Step 1: Search local corpus
-  console.log('Step 1: Searching local corpus...');
-  const localResults = retrieveFromLocalCorpus(query, caseType, 5);
+  console.log(`Step 1: Searching local corpus for ${country}...`);
+  const localResults = retrieveFromLocalCorpus(query, caseType, country, 6);
   if (localResults.length > 0) {
     sources.push('local_corpus');
     allSections = [...allSections, ...localResults];
@@ -285,10 +218,9 @@ async function cascadingLegalSearch(
   // Step 2: Search Supabase database
   if (allSections.length < minResults) {
     console.log('Step 2: Searching database...');
-    const dbResults = await searchSupabaseDatabase(supabase, query, caseType, 5);
+    const dbResults = await searchSupabaseDatabase(supabase, query, caseType, country, 5);
     if (dbResults.length > 0) {
       sources.push('database');
-      // Add only unique sections (by section name)
       const existingSections = new Set(allSections.map(s => s.section));
       const uniqueDbResults = dbResults.filter(s => !existingSections.has(s.section));
       allSections = [...allSections, ...uniqueDbResults];
@@ -296,22 +228,8 @@ async function cascadingLegalSearch(
     }
   }
   
-  // Step 3: Scrape from web if still not enough results
-  if (allSections.length < minResults) {
-    console.log('Step 3: Scraping from web...');
-    const scrapedResults = await scrapeAndStoreLegalContent(supabase, query);
-    if (scrapedResults.length > 0) {
-      sources.push('web_scraping');
-      const existingSections = new Set(allSections.map(s => s.section));
-      const uniqueScrapedResults = scrapedResults.filter(s => !existingSections.has(s.section));
-      allSections = [...allSections, ...uniqueScrapedResults];
-      console.log(`Scraped ${scrapedResults.length} results from web (${uniqueScrapedResults.length} unique)`);
-    }
-  }
-  
-  // Sort all results by relevance and limit
   return {
-    sections: allSections.slice(0, 8),
+    sections: allSections.slice(0, 10),
     sources
   };
 }
@@ -356,48 +274,47 @@ Deno.serve(async (req) => {
       throw new Error('Supabase credentials not configured');
     }
 
-    // Create Supabase client with service role for database operations
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    const { messages, conversationId, caseType } = await req.json();
+    const { messages, conversationId, caseType, country = 'india' } = await req.json();
     
     if (!messages || !Array.isArray(messages)) {
       throw new Error('Messages array is required');
     }
 
-    // Get the last user message for retrieval
     const lastUserMessage = messages.filter((m: any) => m.role === 'user').pop();
     const userQuery = lastUserMessage?.content || '';
 
     // Perform cascading search
-    console.log('Starting cascading legal search for:', userQuery);
+    console.log(`Starting cascading legal search for ${country}:`, userQuery);
     const { sections: relevantSections, sources } = await cascadingLegalSearch(
       supabase,
       userQuery,
       caseType || 'Criminal',
+      country,
       3
     );
     
     console.log(`Found ${relevantSections.length} relevant sections from sources: ${sources.join(', ')}`);
     
-    // Build context from retrieved sections
     const legalContext = relevantSections.length > 0
       ? relevantSections
           .map(s => `**${s.section}: ${s.title}** [Source: ${s.source}]\n${s.content}`)
           .join('\n\n')
       : 'No specific legal provisions found. Please provide more details about your case.';
 
-    // Note about data sources
     const sourcesNote = sources.length > 0
       ? `\n\n*Data retrieved from: ${sources.map(s => s.replace('_', ' ')).join(', ')}*`
       : '';
 
+    const countryInfo = COUNTRY_INFO[country] || COUNTRY_INFO['india'];
+
     // System prompt with legal expertise
-    const systemPrompt = `You are an expert Indian legal assistant specializing in IPC (Indian Penal Code), CrPC (Code of Criminal Procedure), and Constitutional law.
+    const systemPrompt = `You are an expert legal assistant specializing in ${countryInfo.lawSystem} for ${countryInfo.name}.
 
 **Your Responsibilities:**
-1. Analyze case facts and identify applicable legal provisions
-2. Cite specific section numbers (e.g., IPC Section 302, CrPC Section 154)
+1. Analyze case facts and identify applicable legal provisions for ${countryInfo.name}
+2. Cite specific section numbers and law names
 3. Ask clarifying questions ONE AT A TIME to gather complete case information
 4. Explain legal provisions in simple, clear language
 5. Guide users through the legal process step-by-step
@@ -409,16 +326,16 @@ Deno.serve(async (req) => {
 - Never provide definitive legal advice - always recommend consulting a qualified lawyer
 - Be empathetic and professional
 - Keep responses clear and concise
-- If relevant laws were scraped from web sources, mention that for transparency
+- Reference ${countryInfo.name} law specifically
 
-**Relevant Legal Provisions for this Case:**
+**Relevant Legal Provisions for this Case (${countryInfo.name}):**
 ${legalContext}${sourcesNote}
 
 **Case Type:** ${caseType || 'Not specified'}
+**Jurisdiction:** ${countryInfo.name}
 
-Remember: This is informational guidance only. Always advise users to consult with a qualified lawyer for legal advice.`;
+Remember: This is informational guidance only. Always advise users to consult with a qualified lawyer in ${countryInfo.name} for legal advice.`;
 
-    // Prepare request body with NER tool
     const requestBody: any = {
       model: "google/gemini-2.5-flash",
       messages: [
@@ -430,7 +347,6 @@ Remember: This is informational guidance only. Always advise users to consult wi
       max_tokens: 2000
     };
 
-    // Add NER tool for first few messages to extract entities
     if (messages.length <= 6) {
       requestBody.tools = [NER_TOOL];
       requestBody.tool_choice = "auto";
@@ -440,10 +356,10 @@ Remember: This is informational guidance only. Always advise users to consult wi
       messageCount: messages.length,
       relevantSectionsCount: relevantSections.length,
       sources,
-      caseType
+      caseType,
+      country
     });
 
-    // Call Lovable AI
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -471,7 +387,6 @@ Remember: This is informational guidance only. Always advise users to consult wi
       throw new Error(`AI gateway error: ${response.status}`);
     }
 
-    // Stream the response back to client
     return new Response(response.body, {
       headers: {
         ...corsHeaders,

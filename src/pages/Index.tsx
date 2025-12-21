@@ -15,6 +15,7 @@ import { RotateCcw, FileText, Database } from "lucide-react";
 import { toast } from "sonner";
 import { useStreamingChat } from "@/hooks/useStreamingChat";
 import { UserRole } from "@/components/RoleSwitcher";
+import { Country, countries } from "@/components/CountrySelector";
 
 interface Message {
   role: "user" | "assistant";
@@ -30,6 +31,7 @@ const Index = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [caseType, setCaseType] = useState<string | null>(null);
   const [role, setRole] = useState<UserRole>("user");
+  const [country, setCountry] = useState<Country>("india");
   const scrollRef = useRef<HTMLDivElement>(null);
   
   const conversationId = useMemo(() => generateConversationId(), [caseType]);
@@ -37,6 +39,7 @@ const Index = () => {
   const { sendMessage, isLoading } = useStreamingChat({
     conversationId,
     caseType: caseType || 'Criminal',
+    country,
     onMessagesUpdate: setMessages
   });
 
@@ -51,6 +54,16 @@ const Index = () => {
       setRole(newRole);
       setCaseType(null);
       setMessages([]);
+    }
+  };
+
+  const handleCountryChange = (newCountry: Country) => {
+    if (newCountry !== country) {
+      setCountry(newCountry);
+      setCaseType(null);
+      setMessages([]);
+      const countryInfo = countries.find(c => c.id === newCountry);
+      toast.success(`Switched to ${countryInfo?.name} laws`);
     }
   };
 
@@ -94,7 +107,12 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Header role={role} onRoleChange={handleRoleChange} />
+      <Header 
+        role={role} 
+        onRoleChange={handleRoleChange} 
+        country={country} 
+        onCountryChange={handleCountryChange} 
+      />
 
       <main className="flex-1 container mx-auto px-4 py-6 flex flex-col max-w-5xl">
         {!caseType ? (

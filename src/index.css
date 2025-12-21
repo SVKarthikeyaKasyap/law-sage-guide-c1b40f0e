@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Inter:wght@400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -52,13 +54,19 @@ All colors MUST be HSL.
     /* Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(220 60% 18%) 0%, hsl(220 70% 28%) 100%);
     --gradient-gold: linear-gradient(135deg, hsl(43 96% 56%) 0%, hsl(38 100% 50%) 100%);
+    --gradient-hero: linear-gradient(180deg, hsl(220 60% 18%) 0%, hsl(220 50% 25%) 50%, hsl(43 96% 56% / 0.3) 100%);
     
     /* Shadows */
     --shadow-elegant: 0 10px 30px -10px hsl(220 60% 18% / 0.2);
     --shadow-card: 0 2px 8px hsl(220 14% 14% / 0.08);
+    --shadow-glow: 0 0 40px hsl(43 96% 56% / 0.4);
     
     /* Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    /* Typography */
+    --font-display: 'Playfair Display', serif;
+    --font-body: 'Inter', sans-serif;
   }
 
   .dark {
@@ -97,9 +105,11 @@ All colors MUST be HSL.
     
     --gradient-primary: linear-gradient(135deg, hsl(220 26% 14%) 0%, hsl(220 22% 18%) 100%);
     --gradient-gold: linear-gradient(135deg, hsl(43 96% 56%) 0%, hsl(38 100% 50%) 100%);
+    --gradient-hero: linear-gradient(180deg, hsl(220 26% 8%) 0%, hsl(220 22% 14%) 50%, hsl(43 96% 56% / 0.2) 100%);
     
     --shadow-elegant: 0 10px 30px -10px hsl(0 0% 0% / 0.5);
     --shadow-card: 0 2px 8px hsl(0 0% 0% / 0.3);
+    --shadow-glow: 0 0 40px hsl(43 96% 56% / 0.3);
   }
 }
 
@@ -110,8 +120,15 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-body);
     font-feature-settings: "cv11", "ss01";
     font-optical-sizing: auto;
+  }
+  
+  h1, h2, h3, .font-display {
+    font-family: var(--font-display);
+    font-weight: 800;
+    letter-spacing: -0.02em;
   }
 }
 
@@ -124,6 +141,10 @@ All colors MUST be HSL.
     background: var(--gradient-gold);
   }
   
+  .gradient-hero {
+    background: var(--gradient-hero);
+  }
+  
   .shadow-elegant {
     box-shadow: var(--shadow-elegant);
   }
@@ -132,7 +153,18 @@ All colors MUST be HSL.
     box-shadow: var(--shadow-card);
   }
   
+  .shadow-glow {
+    box-shadow: var(--shadow-glow);
+  }
+  
   .transition-smooth {
     transition: var(--transition-smooth);
+  }
+  
+  .text-gradient {
+    background: var(--gradient-gold);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 }
