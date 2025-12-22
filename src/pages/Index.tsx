@@ -40,6 +40,7 @@ const Index = () => {
     conversationId,
     caseType: caseType || 'Criminal',
     country,
+    role,
     onMessagesUpdate: setMessages
   });
 
@@ -74,12 +75,76 @@ const Index = () => {
     
     if (role === "user") {
       if (type === "general-emergency") {
-        welcomeContent = `I understand you're in an emergency situation. I'm here to help guide you through this.\n\n**Your Safety Comes First**\n\nIf you've witnessed a crime (like murder, assault, etc.), please know:\n• **You are protected by law as a witness** under Section 195A IPC and Witness Protection Scheme 2018\n• Your identity can be kept confidential\n• You can seek police protection if you feel threatened\n• Tampering with witnesses is a punishable offense\n\n**Please describe what happened**, and I'll guide you on:\n• Your legal rights and protections\n• Steps to report safely\n• Available support and protection measures\n\n*Stay calm. I'm here to help you through this.*`;
+        welcomeContent = `🙏 I'm here for you. Take a deep breath - you're not alone in this.
+
+**🚨 First, Your Safety:**
+If you're in immediate danger:
+1. **GET TO SAFETY NOW** - Move to a safe location if possible
+2. If you can't leave safely, stay hidden and call emergency services
+3. **Emergency Numbers:** Police: 100 | Women Helpline: 181 | Emergency: 112
+
+---
+
+I understand this must be frightening. Whether you've witnessed something traumatic or are in a difficult situation, I want you to know:
+
+💚 **You matter, and your safety is the priority**
+
+**As a witness, you are PROTECTED:**
+• Section 195A IPC shields you from intimidation
+• Witness Protection Scheme 2018 can hide your identity
+• Courts can order police protection for you
+• Threatening a witness is a serious crime
+
+**Please share what happened when you're ready.** I'm here to:
+• Guide you through your legal rights
+• Help you understand what to expect
+• Suggest safe next steps
+
+*Take your time. I'm listening.* 💙`;
       } else if (type === "transport") {
-        welcomeContent = `I understand you're facing a travel or immigration issue. I'm here to help.\n\n**Common Issues I Can Help With:**\n• Visa expired while abroad\n• Lost or stolen passport\n• Detained at immigration\n• Emergency travel documents\n\n**Immediate Steps:**\n• Stay calm and don't panic\n• Contact your country's embassy or consulate\n• Keep all your documents safe\n• Note down important contact numbers\n\n**Please describe your situation** - where you are, what happened, and what documents you have. I'll provide specific guidance for your case.\n\n*Note: This is informational guidance. Contact your embassy for official assistance.*`;
+        welcomeContent = `🌍 I understand being stuck in another country can feel overwhelming. Don't worry - we'll figure this out together.
+
+**🛡️ First, Stay Calm:**
+Many people face visa/immigration issues every day, and there are solutions.
+
+---
+
+**Common Situations I Can Help With:**
+• ✈️ Visa expired while abroad
+• 📄 Lost or stolen passport
+• 🚫 Detained at immigration
+• 🆘 Need emergency travel documents
+
+**Immediate Steps to Feel Secure:**
+1. 📍 **Stay where it's safe** - a hotel, friend's place, or public area
+2. 📞 **Note your embassy number** - they're there to help citizens abroad
+3. 💼 **Keep copies of all documents** safe (even photos on phone help)
+4. 🤝 **Don't panic** - overstaying is usually handled with a fine, not jail
+
+**Please tell me:**
+• Which country are you in?
+• What happened with your visa/documents?
+• What do you have with you now?
+
+*I'm here to guide you step by step. You're going to be okay.* 💪`;
       }
     } else {
-      welcomeContent = `I'll help you with your ${type} case. I'm an AI assistant powered by advanced language models, trained on Indian law including the IPC, CrPC, and Constitution.\n\n**How I can help:**\n• Identify applicable legal provisions\n• Guide you through case facts gathering\n• Explain legal procedures step-by-step\n• Generate draft legal documents (FIR, notices, complaints)\n\n**Please describe the facts of your case, and I'll analyze it for you.**\n\n*Note: This is informational guidance only. Always consult a qualified lawyer for legal advice.*`;
+      welcomeContent = `**${type.charAt(0).toUpperCase() + type.slice(1)} Law Case Analysis**
+
+I'll assist with precise legal analysis for this case.
+
+**Available Functions:**
+• Identify applicable legal provisions with section citations
+• Extract and organize case facts systematically
+• Analyze procedural requirements
+• Generate draft legal documents (FIR, notices, complaints)
+
+**Please provide the case facts.** I will:
+1. Identify relevant sections and precedents
+2. Ask targeted questions to complete the legal picture
+3. Provide structured analysis suitable for professional use
+
+*This is for informational purposes. Verify all citations independently.*`;
     }
     
     const welcomeMessage: Message = {
