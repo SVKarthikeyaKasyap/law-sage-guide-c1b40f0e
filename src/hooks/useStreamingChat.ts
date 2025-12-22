@@ -11,6 +11,7 @@ interface UseStreamingChatProps {
   conversationId?: string;
   caseType: string;
   country?: string;
+  role?: 'user' | 'lawyer';
   onMessagesUpdate: (messages: Message[]) => void;
 }
 
@@ -18,6 +19,7 @@ export const useStreamingChat = ({
   conversationId,
   caseType,
   country = 'india',
+  role = 'user',
   onMessagesUpdate
 }: UseStreamingChatProps) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -52,7 +54,8 @@ export const useStreamingChat = ({
           })),
           conversationId,
           caseType,
-          country
+          country,
+          userRole: role
         }),
       });
 
@@ -155,7 +158,7 @@ export const useStreamingChat = ({
     } finally {
       setIsLoading(false);
     }
-  }, [conversationId, caseType, country, onMessagesUpdate]);
+  }, [conversationId, caseType, country, role, onMessagesUpdate]);
 
   return { sendMessage, isLoading };
 };
