@@ -144,12 +144,25 @@ async function searchSupabaseDatabase(supabase: any, query: string, caseType: st
   const queryLower = query.toLowerCase();
   const queryWords = queryLower.split(/\s+/).filter(w => w.length > 3);
   
+  // Skip database query if no valid search words
+  if (queryWords.length === 0) {
+    console.log('No valid query words for database search, skipping');
+    return [];
+  }
+  
   try {
-    const { data, error } = await supabase
+    // Build query with country filter
+    let query_builder = supabase
       .from('legal_sections')
       .select('*')
-      .or(queryWords.map(w => `content.ilike.%${w}%`).join(','))
-      .limit(topK * 2);
+      .eq('country', country);
+    
+    // Only add OR filter if we have words
+    if (queryWords.length > 0) {
+      query_builder = query_builder.or(queryWords.map(w => `content.ilike.%${w}%`).join(','));
+    }
+    
+    const { data, error } = await query_builder.limit(topK * 2);
     
     if (error) {
       console.error('Supabase search error:', error);
