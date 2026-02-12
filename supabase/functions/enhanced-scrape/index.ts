@@ -19,7 +19,23 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { searchTerms = ['murder', 'theft', 'assault', 'rape', 'dowry', 'fraud'] } = await req.json();
+    const body = await req.json();
+    
+    // Input validation
+    const MAX_TERMS = 10;
+    const MAX_TERM_LENGTH = 100;
+    let searchTerms: string[] = ['murder', 'theft', 'assault', 'rape', 'dowry', 'fraud'];
+    
+    if (Array.isArray(body.searchTerms)) {
+      searchTerms = body.searchTerms
+        .filter((t: unknown) => typeof t === 'string' && t.length > 0 && t.length <= MAX_TERM_LENGTH)
+        .slice(0, MAX_TERMS);
+      if (searchTerms.length === 0) {
+        return new Response(JSON.stringify({ error: 'Invalid searchTerms: provide 1-10 valid strings' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    }
     
     console.log('Starting comprehensive legal data scraping...');
     
