@@ -32,6 +32,7 @@ const Index = () => {
   const [caseType, setCaseType] = useState<string | null>(null);
   const [role, setRole] = useState<UserRole>("user");
   const [country, setCountry] = useState<Country>("india");
+  const [activeTab, setActiveTab] = useState("chat");
   const scrollRef = useRef<HTMLDivElement>(null);
   
   const conversationId = useMemo(() => generateConversationId(), [caseType]);
@@ -167,7 +168,19 @@ I'll assist with precise legal analysis for this case.
   const handleReset = () => {
     setCaseType(null);
     setMessages([]);
+    setActiveTab("chat");
     toast.success("Conversation reset. Select a new case type to start.");
+  };
+
+  const handleMissingDetails = (details: string[]) => {
+    const detailsList = details.map((d, i) => `${i + 1}. ${d}`).join('\n');
+    const assistantMessage: Message = {
+      role: "assistant",
+      content: `📝 **The document has been updated, but some details are still missing and need your input:**\n\n${detailsList}\n\nPlease provide these details so I can complete the document for you.`,
+      timestamp: new Date(),
+    };
+    setMessages(prev => [...prev, assistantMessage]);
+    setActiveTab("chat");
   };
 
   return (
@@ -210,7 +223,7 @@ I'll assist with precise legal analysis for this case.
               </Button>
             </div>
 
-            <Tabs defaultValue="chat" className="flex-1 flex flex-col">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
               <TabsList className="grid w-full grid-cols-3 mb-4">
                 <TabsTrigger value="chat">Chat</TabsTrigger>
                 <TabsTrigger value="documents">
@@ -278,6 +291,7 @@ I'll assist with precise legal analysis for this case.
                   messages={messages}
                   caseType={caseType || 'Criminal'}
                   country={country}
+                  onMissingDetails={handleMissingDetails}
                 />
               </TabsContent>
 

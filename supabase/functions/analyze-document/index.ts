@@ -106,7 +106,16 @@ You will receive a legal document that has issues. Fix ALL the issues while:
 4. Adding any missing required sections
 5. Ensuring compliance with ${country.toUpperCase()} legal standards
 
-Return ONLY the corrected document text, nothing else. Do not add explanations before or after.`;
+After editing, check if there are any placeholders like [PLACEHOLDER], [NAME], [DATE], [ADDRESS], or any other missing information that requires user input.
+
+Return a JSON response in this EXACT format:
+{
+  "document": "<the full corrected document text>",
+  "missingDetails": ["<list of specific details still needed from the user, e.g. 'Full name of the complainant', 'Date of incident', 'Address of the police station'>"]
+}
+
+If no details are missing, return an empty array for missingDetails.
+Return ONLY valid JSON, no markdown code blocks or extra text.`;
 
       userPrompt = `Fix and improve this ${documentType || 'legal'} document:\n\n${documentText}`;
     } else {
@@ -175,6 +184,30 @@ Return ONLY the corrected document text, nothing else. Do not add explanations b
             missingElements: []
           }
         }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
+    // For edit action, try to parse structured JSON response
+    if (action === 'edit') {
+      try {
+        let jsonStr = content;
+        const jsonMatch = content.match(/```(?:json)?\s*([\s\S]*?)```/);
+        if (jsonMatch) {
+          jsonStr = jsonMatch[1].trim();
+        }
+        const parsed = JSON.parse(jsonStr);
+        return new Response(JSON.stringify({ 
+          success: true, 
+          content: parsed.document || content,
+          missingDetails: Array.isArray(parsed.missingDetails) ? parsed.missingDetails : []
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      } catch {
+        // Fallback: return raw content if JSON parsing fails
+        return new Response(JSON.stringify({ success: true, content, missingDetails: [] }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }

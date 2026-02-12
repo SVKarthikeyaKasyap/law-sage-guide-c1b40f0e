@@ -33,6 +33,7 @@ interface DocumentWorkspaceProps {
   messages: Array<{ role: string; content: string }>;
   caseType: string;
   country?: string;
+  onMissingDetails?: (details: string[]) => void;
 }
 
 type DocType = 'fir' | 'notice' | 'complaint';
@@ -41,7 +42,8 @@ export const DocumentWorkspace = ({
   conversationId,
   messages,
   caseType,
-  country = 'india'
+  country = 'india',
+  onMissingDetails
 }: DocumentWorkspaceProps) => {
   const [activeDoc, setActiveDoc] = useState<DocType | null>(null);
   const [documentText, setDocumentText] = useState('');
@@ -149,7 +151,14 @@ export const DocumentWorkspace = ({
       if (data?.content) {
         setDocumentText(data.content);
         setScanResult(null);
-        toast.success('Document updated with AI corrections');
+
+        // Check if there are missing details that need user input
+        if (data.missingDetails && data.missingDetails.length > 0 && onMissingDetails) {
+          toast.info('Some details are missing — switching to chat for your input.');
+          onMissingDetails(data.missingDetails);
+        } else {
+          toast.success('Document updated with AI corrections');
+        }
       }
     } catch (error) {
       console.error('Edit error:', error);
