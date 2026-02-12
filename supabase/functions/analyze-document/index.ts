@@ -14,10 +14,31 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY not configured');
 
-    const { action, documentText, documentType, caseType, country = 'india', chatContext } = await req.json();
+    const body = await req.json();
+
+    // Input validation
+    const VALID_ACTIONS = ['generate', 'scan', 'edit'];
+    const VALID_COUNTRIES = ['india', 'usa', 'russia', 'china', 'japan', 'uk'];
+    const MAX_DOC_LENGTH = 50000;
+    const MAX_CONTEXT_MESSAGES = 50;
+
+    const action = body.action;
+    if (!action || !VALID_ACTIONS.includes(action)) {
+      return new Response(JSON.stringify({ error: 'Invalid action: must be generate, scan, or edit' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const documentText = typeof body.documentText === 'string' ? body.documentText.slice(0, MAX_DOC_LENGTH) : '';
+    const documentType = typeof body.documentType === 'string' ? body.documentType.slice(0, 100) : 'legal';
+    const caseType = typeof body.caseType === 'string' ? body.caseType.slice(0, 100) : 'Criminal';
+    const country = VALID_COUNTRIES.includes(body.country) ? body.country : 'india';
+    const chatContext = Array.isArray(body.chatContext) ? body.chatContext.slice(0, MAX_CONTEXT_MESSAGES) : [];
 
     if (!documentText && action !== 'generate') {
-      throw new Error('Document text is required');
+      return new Response(JSON.stringify({ error: 'Document text is required for scan/edit actions' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     let systemPrompt = '';
