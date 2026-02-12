@@ -289,11 +289,40 @@ Deno.serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    const { messages, conversationId, caseType, country = 'india', userRole = 'user' } = await req.json();
+    const body = await req.json();
     
-    if (!messages || !Array.isArray(messages)) {
-      throw new Error('Messages array is required');
+    // Input validation
+    const VALID_COUNTRIES = ['india', 'usa', 'russia', 'china', 'japan', 'uk'];
+    const VALID_ROLES = ['user', 'lawyer'];
+    const MAX_MESSAGE_LENGTH = 5000;
+    const MAX_MESSAGES = 50;
+    const MAX_CASE_TYPE_LENGTH = 100;
+
+    const messages = body.messages;
+    if (!messages || !Array.isArray(messages) || messages.length === 0 || messages.length > MAX_MESSAGES) {
+      return new Response(JSON.stringify({ error: 'Invalid messages: must be an array of 1-50 messages' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
+
+    // Validate each message
+    for (const msg of messages) {
+      if (!msg || typeof msg.content !== 'string' || msg.content.length === 0 || msg.content.length > MAX_MESSAGE_LENGTH) {
+        return new Response(JSON.stringify({ error: `Invalid message content: must be 1-${MAX_MESSAGE_LENGTH} characters` }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      if (!['user', 'assistant'].includes(msg.role)) {
+        return new Response(JSON.stringify({ error: 'Invalid message role: must be user or assistant' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
+    const country = VALID_COUNTRIES.includes(body.country) ? body.country : 'india';
+    const userRole = VALID_ROLES.includes(body.userRole) ? body.userRole : 'user';
+    const caseType = typeof body.caseType === 'string' ? body.caseType.slice(0, MAX_CASE_TYPE_LENGTH) : 'Criminal';
+    const conversationId = typeof body.conversationId === 'string' ? body.conversationId.slice(0, 100) : undefined;
 
     const lastUserMessage = messages.filter((m: any) => m.role === 'user').pop();
     const userQuery = lastUserMessage?.content || '';
