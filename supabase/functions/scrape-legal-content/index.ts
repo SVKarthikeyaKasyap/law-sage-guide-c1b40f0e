@@ -17,11 +17,19 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { query, searchType = 'sections' } = await req.json();
+    const body = await req.json();
     
+    // Input validation
+    const MAX_QUERY_LENGTH = 200;
+    const VALID_SEARCH_TYPES = ['sections', 'acts', 'keywords'];
+    
+    const query = typeof body.query === 'string' ? body.query.trim().slice(0, MAX_QUERY_LENGTH) : '';
     if (!query) {
-      throw new Error('Search query is required');
+      return new Response(JSON.stringify({ error: 'Search query is required (max 200 chars)' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
+    const searchType = VALID_SEARCH_TYPES.includes(body.searchType) ? body.searchType : 'sections';
 
     console.log(`Scraping India Code for: ${query}`);
 
