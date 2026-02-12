@@ -306,14 +306,21 @@ Deno.serve(async (req) => {
     }
 
     // Validate each message
+    const MAX_ASSISTANT_MESSAGE_LENGTH = 50000;
     for (const msg of messages) {
-      if (!msg || typeof msg.content !== 'string' || msg.content.length === 0 || msg.content.length > MAX_MESSAGE_LENGTH) {
-        return new Response(JSON.stringify({ error: `Invalid message content: must be 1-${MAX_MESSAGE_LENGTH} characters` }), {
+      if (!msg || typeof msg.content !== 'string' || msg.content.length === 0) {
+        return new Response(JSON.stringify({ error: 'Invalid message content: must be a non-empty string' }), {
           status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
       if (!['user', 'assistant'].includes(msg.role)) {
         return new Response(JSON.stringify({ error: 'Invalid message role: must be user or assistant' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      const maxLen = msg.role === 'user' ? MAX_MESSAGE_LENGTH : MAX_ASSISTANT_MESSAGE_LENGTH;
+      if (msg.content.length > maxLen) {
+        return new Response(JSON.stringify({ error: `Invalid ${msg.role} message: exceeds ${maxLen} character limit` }), {
           status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
