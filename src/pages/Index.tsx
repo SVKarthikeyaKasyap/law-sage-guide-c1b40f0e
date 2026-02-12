@@ -5,7 +5,7 @@ import { ChatInput } from "@/components/ChatInput";
 import { CaseTypeSelector } from "@/components/CaseTypeSelector";
 import { UserCaseSelector } from "@/components/UserCaseSelector";
 import { FeedbackButtons } from "@/components/FeedbackButtons";
-import { DocumentGenerator } from "@/components/DocumentGenerator";
+import { DocumentWorkspace } from "@/components/DocumentWorkspace";
 import { DataScraperPanel } from "@/components/DataScraperPanel";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -273,10 +273,11 @@ I'll assist with precise legal analysis for this case.
               </TabsContent>
 
               <TabsContent value="documents" className="flex-1">
-                <DocumentGenerator
+                <DocumentWorkspace
                   conversationId={conversationId}
                   messages={messages}
                   caseType={caseType || 'Criminal'}
+                  country={country}
                 />
               </TabsContent>
 
