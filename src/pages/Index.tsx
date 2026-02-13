@@ -156,9 +156,9 @@ I'll assist with precise legal analysis for this case.
     setMessages([welcomeMessage]);
   };
 
-  const handleSendMessage = async (content: string) => {
+  const handleSendMessage = async (content: string, fileContent?: { name: string; text: string; type: string }) => {
     try {
-      await sendMessage(content, messages);
+      await sendMessage(content, messages, fileContent);
     } catch (error) {
       toast.error("Failed to send message. Please try again.");
       console.error(error);
