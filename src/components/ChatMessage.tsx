@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { Scale } from "lucide-react";
+import { Scale, Volume2, VolumeX } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface ChatMessageProps {
   role: "user" | "assistant";
@@ -9,6 +11,31 @@ interface ChatMessageProps {
 
 export const ChatMessage = ({ role, content, timestamp }: ChatMessageProps) => {
   const isAssistant = role === "assistant";
+  const [isSpeaking, setIsSpeaking] = useState(false);
+
+  const handleSpeak = () => {
+    if (isSpeaking) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+      return;
+    }
+
+    // Strip markdown for cleaner speech
+    const cleanText = content
+      .replace(/[*_#`~>|\[\]()!]/g, "")
+      .replace(/\n{2,}/g, ". ")
+      .replace(/\n/g, " ")
+      .slice(0, 3000);
+
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.rate = 1;
+    utterance.pitch = 1;
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
+
+    window.speechSynthesis.speak(utterance);
+    setIsSpeaking(true);
+  };
 
   return (
     <div
@@ -25,7 +52,7 @@ export const ChatMessage = ({ role, content, timestamp }: ChatMessageProps) => {
       
       <div
         className={cn(
-          "max-w-[80%] rounded-2xl px-4 py-3 shadow-card transition-smooth",
+          "max-w-[80%] rounded-2xl px-4 py-3 shadow-card transition-smooth relative group",
           isAssistant
             ? "bg-card border border-border"
             : "bg-primary text-primary-foreground"
@@ -36,6 +63,21 @@ export const ChatMessage = ({ role, content, timestamp }: ChatMessageProps) => {
           <span className="text-xs opacity-60 mt-1 block">
             {timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
           </span>
+        )}
+        {isAssistant && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleSpeak}
+            className="absolute -bottom-3 -right-3 h-7 w-7 rounded-full bg-muted border border-border opacity-0 group-hover:opacity-100 transition-opacity"
+            title={isSpeaking ? "Stop speaking" : "Read aloud"}
+          >
+            {isSpeaking ? (
+              <VolumeX className="h-3.5 w-3.5 text-destructive" />
+            ) : (
+              <Volume2 className="h-3.5 w-3.5 text-muted-foreground" />
+            )}
+          </Button>
         )}
       </div>
 
