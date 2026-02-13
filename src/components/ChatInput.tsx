@@ -14,6 +14,7 @@ export const ChatInput = ({ onSend, disabled, placeholder }: ChatInputProps) => 
   const [input, setInput] = useState("");
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef<any>(null);
+  const baseTextRef = useRef("");
 
   useEffect(() => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -25,18 +26,20 @@ export const ChatInput = ({ onSend, disabled, placeholder }: ChatInputProps) => 
     recognition.lang = "en-US";
 
     recognition.onresult = (event: any) => {
-      let transcript = "";
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        transcript += event.results[i][0].transcript;
-      }
-      setInput(prev => {
-        // Replace interim with final
-        const base = prev.replace(/\[listening\.\.\.\]$/, "").trim();
-        if (event.results[event.results.length - 1].isFinal) {
-          return (base ? base + " " : "") + transcript;
+      // Build final transcript from all finalized results
+      let finalText = "";
+      let interimText = "";
+      for (let i = 0; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) {
+          finalText += transcript + " ";
+        } else {
+          interimText += transcript;
         }
-        return (base ? base + " " : "") + transcript;
-      });
+      }
+      const base = baseTextRef.current;
+      const combined = (base ? base + " " : "") + finalText.trim() + (interimText ? " " + interimText : "");
+      setInput(combined.trim());
     };
 
     recognition.onerror = (event: any) => {
@@ -77,6 +80,7 @@ export const ChatInput = ({ onSend, disabled, placeholder }: ChatInputProps) => 
             autoGainControl: true,
           },
         });
+        baseTextRef.current = input.trim();
         recognitionRef.current.start();
         setIsListening(true);
         toast.info("Listening... Speak now.");
