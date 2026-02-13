@@ -26,7 +26,8 @@ export const useStreamingChat = ({
 
   const sendMessage = useCallback(async (
     content: string,
-    currentMessages: Message[]
+    currentMessages: Message[],
+    fileContent?: { name: string; text: string; type: string }
   ) => {
     const userMessage: Message = {
       role: 'user',
@@ -55,7 +56,8 @@ export const useStreamingChat = ({
           conversationId,
           caseType,
           country,
-          userRole: role
+          userRole: role,
+          ...(fileContent ? { documentAttachment: { name: fileContent.name, text: fileContent.text, type: fileContent.type } } : {})
         }),
       });
 

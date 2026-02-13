@@ -331,6 +331,17 @@ Deno.serve(async (req) => {
     const caseType = typeof body.caseType === 'string' ? body.caseType.slice(0, MAX_CASE_TYPE_LENGTH) : 'Criminal';
     const conversationId = typeof body.conversationId === 'string' ? body.conversationId.slice(0, 100) : undefined;
 
+    // Handle document attachment
+    const documentAttachment = body.documentAttachment;
+    let documentContext = '';
+    if (documentAttachment && typeof documentAttachment.text === 'string') {
+      const docText = documentAttachment.text.slice(0, 30000);
+      const docName = typeof documentAttachment.name === 'string' ? documentAttachment.name.slice(0, 200) : 'unknown';
+      const docType = typeof documentAttachment.type === 'string' ? documentAttachment.type.slice(0, 100) : 'unknown';
+      documentContext = `\n\n---\n📎 **ATTACHED DOCUMENT: "${docName}"** (Type: ${docType})\n\n${docText}\n---\n`;
+      console.log(`Document attached: ${docName} (${docType}), ${docText.length} chars`);
+    }
+
     const lastUserMessage = messages.filter((m: any) => m.role === 'user').pop();
     const userQuery = lastUserMessage?.content || '';
 
@@ -396,6 +407,7 @@ ${legalContext}${sourcesNote}
 
 **Case Type:** ${caseType || 'Emergency'}
 **Jurisdiction:** ${countryInfo.name}
+${documentContext ? `\n**DOCUMENT ANALYSIS INSTRUCTIONS:**\nThe user has attached a document. Analyze it thoroughly:\n- Identify the document type (FIR, affidavit, contract, notice, court order, etc.)\n- Check for legal accuracy, completeness, and proper formatting\n- Highlight any issues, missing information, or areas of concern\n- Explain the document's implications in simple terms\n- Suggest next steps based on the document content\n${documentContext}` : ''}
 
 Remember: Be like a caring friend who happens to know the law. Safety and emotional wellbeing come first, legal details second.`;
     } else {
@@ -450,6 +462,7 @@ ${legalContext}${sourcesNote}
 
 **Case Type:** ${caseType || 'Not specified'}
 **Jurisdiction:** ${countryInfo.name}
+${documentContext ? `\n**DOCUMENT ANALYSIS INSTRUCTIONS:**\nThe user has attached a document as evidence or for review. Analyze it with extreme legal scrutiny:\n- Identify the document type and its legal standing\n- Verify legal citations, section references, and procedural compliance\n- Assess authenticity indicators and admissibility as evidence\n- Identify weaknesses an opponent could exploit\n- Evaluate its strategic value for the case\n- Check for any missing signatures, dates, stamps, or required elements\n${documentContext}` : ''}
 
 BEGIN by summarizing the case as you currently understand it from the conversation, then ask for the most critical missing legal details. All citations should be verified by the practitioner.`;
     }
