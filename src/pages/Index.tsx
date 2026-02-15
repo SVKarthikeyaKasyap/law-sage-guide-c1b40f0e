@@ -11,11 +11,12 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { RotateCcw, FileText, Database } from "lucide-react";
+import { RotateCcw, FileText, Database, Zap, Shield } from "lucide-react";
 import { toast } from "sonner";
 import { useStreamingChat } from "@/hooks/useStreamingChat";
 import { UserRole } from "@/components/RoleSwitcher";
 import { Country, countries } from "@/components/CountrySelector";
+import { cn } from "@/lib/utils";
 
 interface Message {
   role: "user" | "assistant";
@@ -33,6 +34,7 @@ const Index = () => {
   const [role, setRole] = useState<UserRole>("user");
   const [country, setCountry] = useState<Country>("india");
   const [activeTab, setActiveTab] = useState("chat");
+  const [deepSearch, setDeepSearch] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   
   const conversationId = useMemo(() => generateConversationId(), [caseType]);
@@ -42,6 +44,7 @@ const Index = () => {
     caseType: caseType || 'Criminal',
     country,
     role,
+    deepSearch,
     onMessagesUpdate: setMessages
   });
 
@@ -169,7 +172,18 @@ I'll assist with precise legal analysis for this case.
     setCaseType(null);
     setMessages([]);
     setActiveTab("chat");
+    setDeepSearch(false);
     toast.success("Conversation reset. Select a new case type to start.");
+  };
+
+  const handleToggleDeepSearch = () => {
+    const next = !deepSearch;
+    setDeepSearch(next);
+    if (next) {
+      toast.success("⚡ Advanced Deep Search ACTIVATED — All 3 database levels will be searched exhaustively.", { duration: 4000 });
+    } else {
+      toast.info("Standard search mode restored.");
+    }
   };
 
   const handleMissingDetails = (details: string[]) => {
@@ -184,7 +198,7 @@ I'll assist with precise legal analysis for this case.
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className={cn("min-h-screen flex flex-col transition-all duration-700", deepSearch ? "bg-[hsl(220,26%,8%)]" : "bg-background")}>
       <Header 
         role={role} 
         onRoleChange={handleRoleChange} 
@@ -205,22 +219,36 @@ I'll assist with precise legal analysis for this case.
           <>
             <div className="flex justify-between items-center mb-4">
               <div>
-                <h2 className="text-lg font-semibold text-foreground capitalize">
-                  {caseType} Law Case
+                <h2 className={cn("text-lg font-semibold capitalize transition-colors duration-500", deepSearch ? "text-amber-400" : "text-foreground")}>
+                  {deepSearch ? `⚡ ${caseType} Law — Deep Investigation` : `${caseType} Law Case`}
                 </h2>
-                <p className="text-sm text-muted-foreground">
-                  {messages.length} message{messages.length !== 1 ? "s" : ""} • Powered by AI
+                <p className={cn("text-sm transition-colors duration-500", deepSearch ? "text-amber-200/70" : "text-muted-foreground")}>
+                  {messages.length} message{messages.length !== 1 ? "s" : ""} • {deepSearch ? "3-Level Deep Search Active" : "Powered by AI"}
                 </p>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleReset}
-                className="gap-2"
-              >
-                <RotateCcw className="w-4 h-4" />
-                New Case
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant={deepSearch ? "default" : "outline"}
+                  size="sm"
+                  onClick={handleToggleDeepSearch}
+                  className={cn(
+                    "gap-2 transition-all duration-500",
+                    deepSearch && "bg-amber-600 hover:bg-amber-700 text-white shadow-[0_0_20px_hsl(43,96%,56%,0.4)] animate-pulse"
+                  )}
+                >
+                  {deepSearch ? <Shield className="w-4 h-4" /> : <Zap className="w-4 h-4" />}
+                  {deepSearch ? "⚡ DEEP SEARCH ON" : "Advanced Mode"}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleReset}
+                  className="gap-2"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  New Case
+                </Button>
+              </div>
             </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
@@ -237,7 +265,18 @@ I'll assist with precise legal analysis for this case.
               </TabsList>
 
               <TabsContent value="chat" className="flex-1 flex flex-col">
-                <Card className="flex-1 flex flex-col shadow-elegant">
+                {deepSearch && (
+                  <div className="mb-3 flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-950/60 border border-amber-700/50 text-amber-200 text-xs font-semibold animate-in fade-in">
+                    <Shield className="w-4 h-4 text-amber-400 animate-pulse" />
+                    <span>⚡ DEEP SEARCH ACTIVE — Searching Local Corpus → Cloud Database → Indian Kanoon Portal</span>
+                  </div>
+                )}
+                <Card className={cn(
+                  "flex-1 flex flex-col transition-all duration-700",
+                  deepSearch
+                    ? "shadow-[0_0_30px_hsl(43,96%,56%,0.15)] border-amber-700/40 bg-[hsl(220,22%,12%)]"
+                    : "shadow-elegant"
+                )}>
               <ScrollArea className="flex-1 p-6" ref={scrollRef}>
                 {messages.length === 0 ? (
                   <div className="h-full flex items-center justify-center text-center text-muted-foreground">

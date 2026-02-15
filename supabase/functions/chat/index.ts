@@ -25,60 +25,33 @@ const LEGAL_CORPUS: Record<string, LegalSection[]> = {
     { section: "Passport Act Section 12", title: "Offences and Penalties", content: "Whoever makes false representation to obtain passport, or uses passport issued to another person shall be punished with imprisonment up to two years or fine or both.", keywords: ["passport", "false", "fraud", "travel", "document"], category: "Immigration" },
   ],
   usa: [
-    { section: "18 U.S.C. § 1111", title: "Murder", content: "Murder is the unlawful killing of a human being with malice aforethought. First degree murder is punishable by death or life imprisonment. Second degree murder is punishable by imprisonment for any term of years or for life.", keywords: ["murder", "homicide", "killing", "death penalty", "life imprisonment"], category: "Criminal" },
-    { section: "18 U.S.C. § 113", title: "Assault", content: "Assault with intent to commit murder or serious bodily injury is punishable by imprisonment of up to 20 years. Simple assault is punishable by fine or imprisonment up to 6 months.", keywords: ["assault", "battery", "injury", "violence", "attack"], category: "Criminal" },
-    { section: "18 U.S.C. § 2241", title: "Sexual Abuse", content: "Whoever knowingly causes another person to engage in a sexual act by using force against that person shall be fined and imprisoned for any term of years or for life.", keywords: ["sexual", "abuse", "rape", "assault", "force"], category: "Criminal" },
-    { section: "18 U.S.C. § 2111", title: "Robbery", content: "Whoever by force and violence, or by intimidation, takes from the person or presence of another anything of value, shall be imprisoned not more than fifteen years.", keywords: ["robbery", "theft", "force", "violence", "stealing"], category: "Criminal" },
-    { section: "18 U.S.C. § 1341", title: "Mail Fraud", content: "Whoever devises any scheme to defraud or for obtaining money by means of false pretenses using mail shall be fined or imprisoned not more than 20 years, or both.", keywords: ["fraud", "mail", "scam", "deception", "money"], category: "Criminal" },
-    { section: "8 U.S.C. § 1227", title: "Deportable Aliens", content: "Any alien who at the time of entry was within one or more classes of deportable aliens, or who has violated immigration law, is deportable.", keywords: ["deportation", "visa", "immigration", "alien", "removal"], category: "Immigration" },
-    { section: "8 U.S.C. § 1182", title: "Inadmissible Aliens", content: "Aliens who are unlawfully present for more than 180 days but less than 1 year face a 3-year bar from admission. Those unlawfully present for 1 year or more face a 10-year bar.", keywords: ["overstay", "visa", "unlawful", "bar", "admission"], category: "Immigration" },
-    { section: "8 U.S.C. § 1324c", title: "Document Fraud", content: "It is unlawful to forge, counterfeit, alter, or falsely make any immigration document. Penalties include fines and imprisonment.", keywords: ["document", "fraud", "passport", "forgery", "immigration"], category: "Immigration" },
-    { section: "Miranda v. Arizona", title: "Right to Remain Silent", content: "Before custodial interrogation, police must inform suspects of their right to remain silent, that anything said can be used against them, right to an attorney, and if unable to afford one, an attorney will be appointed.", keywords: ["miranda", "rights", "silence", "attorney", "interrogation", "arrest"], category: "Constitutional" },
-    { section: "Fourth Amendment", title: "Protection Against Unreasonable Searches", content: "The right of the people to be secure in their persons, houses, papers, and effects, against unreasonable searches and seizures, shall not be violated.", keywords: ["search", "seizure", "warrant", "privacy", "police"], category: "Constitutional" },
-    { section: "Fifth Amendment", title: "Right Against Self-Incrimination", content: "No person shall be compelled in any criminal case to be a witness against himself, nor be deprived of life, liberty, or property, without due process of law.", keywords: ["self-incrimination", "due process", "rights", "testimony"], category: "Constitutional" },
-    { section: "Sixth Amendment", title: "Right to Speedy Trial and Counsel", content: "In all criminal prosecutions, the accused shall enjoy the right to a speedy and public trial, to be informed of the accusations, to confront witnesses, and to have the assistance of counsel.", keywords: ["trial", "counsel", "attorney", "speedy", "jury"], category: "Constitutional" },
+    { section: "18 U.S.C. § 1111", title: "Murder", content: "Murder is the unlawful killing of a human being with malice aforethought. First degree murder is punishable by death or life imprisonment.", keywords: ["murder", "homicide", "killing", "death penalty"], category: "Criminal" },
+    { section: "18 U.S.C. § 113", title: "Assault", content: "Assault with intent to commit murder or serious bodily injury is punishable by imprisonment of up to 20 years.", keywords: ["assault", "battery", "injury", "violence"], category: "Criminal" },
+    { section: "18 U.S.C. § 2241", title: "Sexual Abuse", content: "Whoever knowingly causes another person to engage in a sexual act by using force shall be fined and imprisoned for any term of years or for life.", keywords: ["sexual", "abuse", "rape", "assault"], category: "Criminal" },
+    { section: "18 U.S.C. § 2111", title: "Robbery", content: "Whoever by force and violence takes from the person of another anything of value shall be imprisoned not more than fifteen years.", keywords: ["robbery", "theft", "force", "violence"], category: "Criminal" },
+    { section: "8 U.S.C. § 1227", title: "Deportable Aliens", content: "Any alien who has violated immigration law is deportable.", keywords: ["deportation", "visa", "immigration"], category: "Immigration" },
+    { section: "Miranda v. Arizona", title: "Right to Remain Silent", content: "Before custodial interrogation, police must inform suspects of their right to remain silent and right to an attorney.", keywords: ["miranda", "rights", "silence", "attorney"], category: "Constitutional" },
   ],
   russia: [
-    { section: "Article 105 Criminal Code RF", title: "Murder", content: "Murder, that is, the intentional causing of death to another person, shall be punishable by deprivation of liberty for a term of six to fifteen years. Aggravated murder is punishable by imprisonment from eight to twenty years or life imprisonment.", keywords: ["murder", "убийство", "death", "killing", "homicide"], category: "Criminal" },
-    { section: "Article 111 Criminal Code RF", title: "Intentional Infliction of Grave Bodily Harm", content: "Intentional infliction of grave bodily harm dangerous to human life shall be punishable by deprivation of liberty for a term of up to eight years.", keywords: ["bodily harm", "injury", "assault", "violence"], category: "Criminal" },
-    { section: "Article 131 Criminal Code RF", title: "Rape", content: "Rape, that is, sexual intercourse with the use of violence or threats, or using the helpless state of the victim, shall be punishable by deprivation of liberty for a term of three to six years.", keywords: ["rape", "sexual", "violence", "assault"], category: "Criminal" },
-    { section: "Article 158 Criminal Code RF", title: "Theft", content: "Theft, that is, the secret stealing of another's property, shall be punishable by a fine, or by compulsory works, or by deprivation of liberty for up to two years.", keywords: ["theft", "stealing", "property", "кража"], category: "Criminal" },
-    { section: "Article 159 Criminal Code RF", title: "Fraud", content: "Fraud, that is, the stealing of another's property or the acquisition of rights to another's property by deceit or abuse of trust, shall be punishable by a fine or imprisonment.", keywords: ["fraud", "deceit", "мошенничество", "scam"], category: "Criminal" },
-    { section: "Federal Law No. 115-FZ", title: "Legal Status of Foreign Citizens", content: "Foreign citizens must have valid visa and migration card. Overstaying visa results in fines from 2,000 to 5,000 rubles and possible deportation with re-entry ban.", keywords: ["visa", "foreigner", "migration", "виза", "deportation"], category: "Immigration" },
-    { section: "Article 18.8 Administrative Code", title: "Violation of Stay Rules", content: "Violation of rules of entry or stay by a foreign citizen in Russia entails a fine from 2,000 to 5,000 rubles with administrative deportation.", keywords: ["overstay", "violation", "fine", "deportation"], category: "Immigration" },
-    { section: "Article 322 Criminal Code RF", title: "Illegal Border Crossing", content: "Illegal crossing of the State Border of the Russian Federation shall be punishable by a fine or imprisonment for up to two years.", keywords: ["border", "illegal", "crossing", "граница"], category: "Immigration" },
+    { section: "Article 105 Criminal Code RF", title: "Murder", content: "Murder shall be punishable by deprivation of liberty for a term of six to fifteen years.", keywords: ["murder", "death", "killing"], category: "Criminal" },
+    { section: "Article 158 Criminal Code RF", title: "Theft", content: "Theft shall be punishable by a fine, or by deprivation of liberty for up to two years.", keywords: ["theft", "stealing", "property"], category: "Criminal" },
+    { section: "Federal Law No. 115-FZ", title: "Legal Status of Foreign Citizens", content: "Foreign citizens must have valid visa and migration card. Overstaying results in fines and possible deportation.", keywords: ["visa", "foreigner", "migration", "deportation"], category: "Immigration" },
   ],
   china: [
-    { section: "Article 232 Criminal Law PRC", title: "Intentional Homicide", content: "Whoever intentionally kills another person shall be sentenced to death, life imprisonment or fixed-term imprisonment of not less than 10 years. If circumstances are relatively minor, shall be sentenced to fixed-term imprisonment of 3 to 10 years.", keywords: ["murder", "homicide", "killing", "death", "故意杀人"], category: "Criminal" },
-    { section: "Article 234 Criminal Law PRC", title: "Intentional Injury", content: "Whoever intentionally injures another person shall be sentenced to fixed-term imprisonment of not more than 3 years or criminal detention. If serious injury caused, imprisonment of 3 to 10 years.", keywords: ["injury", "assault", "harm", "故意伤害"], category: "Criminal" },
-    { section: "Article 236 Criminal Law PRC", title: "Rape", content: "Whoever rapes a woman by violence, coercion or other means shall be sentenced to fixed-term imprisonment of 3 to 10 years. Aggravated cases may result in more than 10 years, life imprisonment, or death.", keywords: ["rape", "sexual", "violence", "强奸"], category: "Criminal" },
-    { section: "Article 264 Criminal Law PRC", title: "Theft", content: "Whoever steals a relatively large amount of public or private property or commits theft repeatedly shall be sentenced to fixed-term imprisonment of not more than 3 years, criminal detention or surveillance.", keywords: ["theft", "stealing", "property", "盗窃"], category: "Criminal" },
-    { section: "Article 266 Criminal Law PRC", title: "Fraud", content: "Whoever defrauds public or private property of a relatively large amount shall be sentenced to fixed-term imprisonment of not more than 3 years.", keywords: ["fraud", "scam", "deception", "诈骗"], category: "Criminal" },
-    { section: "Exit-Entry Administration Law Art. 78", title: "Illegal Stay", content: "Foreigners who illegally stay in China shall be given a warning and may be fined up to 10,000 yuan per day (maximum 50,000 yuan), or detained for 5 to 15 days. May also be deported.", keywords: ["visa", "overstay", "foreigner", "illegal", "签证"], category: "Immigration" },
-    { section: "Exit-Entry Administration Law Art. 81", title: "Deportation", content: "Foreigners who violate this Law may be deported. Those deported shall not be allowed to enter China for 1 to 5 years from the date of deportation.", keywords: ["deportation", "ban", "violation", "遣返"], category: "Immigration" },
-    { section: "Regulations on Foreigners Art. 42", title: "Visa Extension", content: "Foreigners who need to extend their stay shall apply to the local exit-entry administration authority 7 days before the expiry of their visa.", keywords: ["visa", "extension", "application", "延期"], category: "Immigration" },
+    { section: "Article 232 Criminal Law PRC", title: "Intentional Homicide", content: "Whoever intentionally kills another person shall be sentenced to death, life imprisonment or fixed-term imprisonment of not less than 10 years.", keywords: ["murder", "homicide", "killing", "death"], category: "Criminal" },
+    { section: "Article 264 Criminal Law PRC", title: "Theft", content: "Whoever steals a relatively large amount of property shall be sentenced to fixed-term imprisonment of not more than 3 years.", keywords: ["theft", "stealing", "property"], category: "Criminal" },
+    { section: "Exit-Entry Administration Law Art. 78", title: "Illegal Stay", content: "Foreigners who illegally stay in China shall be given a warning and may be fined or detained.", keywords: ["visa", "overstay", "foreigner"], category: "Immigration" },
   ],
   japan: [
-    { section: "Penal Code Article 199", title: "Homicide", content: "A person who kills another shall be punished by the death penalty or imprisonment with work for life or for a definite term of not less than 5 years.", keywords: ["murder", "homicide", "killing", "殺人"], category: "Criminal" },
-    { section: "Penal Code Article 204", title: "Injury", content: "A person who injures the body of another shall be punished by imprisonment with work for not more than 15 years or a fine of not more than 500,000 yen.", keywords: ["injury", "assault", "harm", "傷害"], category: "Criminal" },
-    { section: "Penal Code Article 177", title: "Forcible Sexual Intercourse", content: "A person who, through assault or intimidation, has sexual intercourse with a person of 13 years of age or above shall be punished by imprisonment for a definite term of not less than 5 years.", keywords: ["rape", "sexual", "assault", "強制性交"], category: "Criminal" },
-    { section: "Penal Code Article 235", title: "Theft", content: "A person who steals the property of another commits the crime of theft and shall be punished by imprisonment with work for not more than 10 years or a fine of not more than 500,000 yen.", keywords: ["theft", "stealing", "property", "窃盗"], category: "Criminal" },
-    { section: "Penal Code Article 246", title: "Fraud", content: "A person who defrauds another of property shall be punished by imprisonment with work for not more than 10 years.", keywords: ["fraud", "scam", "deception", "詐欺"], category: "Criminal" },
-    { section: "Immigration Control Act Art. 70", title: "Illegal Stay", content: "A foreign national who stays in Japan beyond their period of stay without permission shall be punished by imprisonment with work for not more than 3 years or a fine of not more than 3 million yen.", keywords: ["visa", "overstay", "illegal", "在留"], category: "Immigration" },
-    { section: "Immigration Control Act Art. 24", title: "Deportation", content: "Foreign nationals who have violated immigration laws may be subject to deportation proceedings. Those deported may be banned from re-entry for 5 years, or 10 years for repeat offenders.", keywords: ["deportation", "ban", "violation", "退去強制"], category: "Immigration" },
-    { section: "Immigration Control Act Art. 22-4", title: "Status of Residence", content: "Foreign nationals must maintain valid status of residence. Those who lose their status must leave Japan or apply for a different status within the prescribed period.", keywords: ["visa", "status", "residence", "在留資格"], category: "Immigration" },
+    { section: "Penal Code Article 199", title: "Homicide", content: "A person who kills another shall be punished by the death penalty or imprisonment with work for life or for not less than 5 years.", keywords: ["murder", "homicide", "killing"], category: "Criminal" },
+    { section: "Penal Code Article 235", title: "Theft", content: "A person who steals the property of another shall be punished by imprisonment for not more than 10 years.", keywords: ["theft", "stealing", "property"], category: "Criminal" },
+    { section: "Immigration Control Act Art. 70", title: "Illegal Stay", content: "A foreign national who stays beyond their period of stay shall be punished by imprisonment for not more than 3 years.", keywords: ["visa", "overstay", "illegal"], category: "Immigration" },
   ],
   uk: [
-    { section: "Murder (Common Law)", title: "Murder", content: "Murder is the unlawful killing of a human being under the Queen's Peace with malice aforethought. The mandatory sentence for murder is life imprisonment.", keywords: ["murder", "homicide", "killing", "life imprisonment"], category: "Criminal" },
-    { section: "Offences Against the Person Act 1861 s.18", title: "Wounding with Intent", content: "Whosoever shall unlawfully and maliciously wound or cause grievous bodily harm to any person with intent to do grievous bodily harm shall be liable to imprisonment for life.", keywords: ["wounding", "gbh", "injury", "assault"], category: "Criminal" },
-    { section: "Sexual Offences Act 2003 s.1", title: "Rape", content: "A person commits rape if he intentionally penetrates the vagina, anus or mouth of another person with his penis, and that person does not consent, and he does not reasonably believe that person consents. Maximum sentence is life imprisonment.", keywords: ["rape", "sexual", "assault", "consent"], category: "Criminal" },
-    { section: "Theft Act 1968 s.1", title: "Theft", content: "A person is guilty of theft if he dishonestly appropriates property belonging to another with the intention of permanently depriving the other of it. Maximum sentence is 7 years imprisonment.", keywords: ["theft", "stealing", "property", "dishonest"], category: "Criminal" },
-    { section: "Fraud Act 2006 s.2", title: "Fraud by False Representation", content: "A person is guilty of fraud if he dishonestly makes a false representation with intent to make a gain for himself or cause loss to another. Maximum sentence is 10 years imprisonment.", keywords: ["fraud", "false", "representation", "scam"], category: "Criminal" },
-    { section: "Immigration Act 1971 s.24", title: "Illegal Entry and Overstaying", content: "A person who knowingly enters the UK without leave, or overstays their leave, is guilty of an offence. Penalties include up to 6 months imprisonment or a fine.", keywords: ["visa", "overstay", "illegal", "immigration"], category: "Immigration" },
-    { section: "Immigration Act 1971 s.3", title: "Deportation", content: "The Secretary of State may deport a person if deemed conducive to the public good, if the person has been convicted of an offence punishable with imprisonment and recommended for deportation by the court.", keywords: ["deportation", "removal", "public good"], category: "Immigration" },
-    { section: "UK Borders Act 2007 s.32", title: "Automatic Deportation", content: "A foreign criminal who is sentenced to imprisonment for 12 months or more shall be automatically deported unless exceptions apply.", keywords: ["deportation", "criminal", "automatic", "sentence"], category: "Immigration" },
-    { section: "Police and Criminal Evidence Act 1984", title: "Rights on Arrest", content: "Upon arrest, you have the right to remain silent, to have someone informed of your arrest, to consult a solicitor privately, and to read the Codes of Practice.", keywords: ["arrest", "rights", "solicitor", "police", "caution"], category: "Criminal Procedure" },
-    { section: "Human Rights Act 1998 Art. 6", title: "Right to Fair Trial", content: "Everyone is entitled to a fair and public hearing within a reasonable time by an independent and impartial tribunal. Everyone charged with a criminal offence shall be presumed innocent until proved guilty.", keywords: ["fair trial", "rights", "innocent", "hearing"], category: "Constitutional" },
+    { section: "Murder (Common Law)", title: "Murder", content: "Murder is the unlawful killing of a human being with malice aforethought. The mandatory sentence is life imprisonment.", keywords: ["murder", "homicide", "killing"], category: "Criminal" },
+    { section: "Theft Act 1968 s.1", title: "Theft", content: "A person is guilty of theft if he dishonestly appropriates property belonging to another. Maximum 7 years imprisonment.", keywords: ["theft", "stealing", "property"], category: "Criminal" },
+    { section: "Immigration Act 1971 s.24", title: "Illegal Entry and Overstaying", content: "A person who knowingly enters the UK without leave, or overstays, is guilty of an offence. Up to 6 months imprisonment.", keywords: ["visa", "overstay", "immigration"], category: "Immigration" },
+    { section: "Police and Criminal Evidence Act 1984", title: "Rights on Arrest", content: "Upon arrest, you have the right to remain silent, to have someone informed, and to consult a solicitor privately.", keywords: ["arrest", "rights", "solicitor", "police"], category: "Criminal Procedure" },
   ]
 };
 
@@ -91,7 +64,6 @@ interface LegalSection {
   source?: string;
 }
 
-// Country info for system prompts
 const COUNTRY_INFO: Record<string, { name: string; lawSystem: string }> = {
   india: { name: "India", lawSystem: "Indian Penal Code (IPC), CrPC, and Constitution" },
   usa: { name: "United States", lawSystem: "US Code, State Laws, and Constitutional Rights" },
@@ -101,109 +73,126 @@ const COUNTRY_INFO: Record<string, { name: string; lawSystem: string }> = {
   uk: { name: "United Kingdom", lawSystem: "Common Law, Statutory Law, and Human Rights Act" }
 };
 
-// Simple keyword-based retrieval function for local corpus
 function retrieveFromLocalCorpus(query: string, caseType: string, country: string, topK: number = 5): LegalSection[] {
   const queryLower = query.toLowerCase();
   const queryWords = queryLower.split(/\s+/).filter(w => w.length > 3);
-  
   const countryCorpus = LEGAL_CORPUS[country] || LEGAL_CORPUS['india'];
   
   const scored = countryCorpus.map(section => {
     let score = 0;
-    
-    if (section.category.toLowerCase().includes(caseType.toLowerCase())) {
-      score += 5;
-    }
-    
+    if (section.category.toLowerCase().includes(caseType.toLowerCase())) score += 5;
     section.keywords.forEach(keyword => {
-      if (queryLower.includes(keyword.toLowerCase())) {
-        score += 3;
-      }
+      if (queryLower.includes(keyword.toLowerCase())) score += 3;
     });
-    
     queryWords.forEach(word => {
-      if (section.content.toLowerCase().includes(word)) {
-        score += 1;
-      }
-      if (section.title.toLowerCase().includes(word)) {
-        score += 2;
-      }
+      if (section.content.toLowerCase().includes(word)) score += 1;
+      if (section.title.toLowerCase().includes(word)) score += 2;
     });
-    
     return { ...section, score, source: 'local' };
   });
   
-  return scored
-    .filter(s => s.score > 0)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, topK);
+  return scored.filter(s => s.score > 0).sort((a, b) => b.score - a.score).slice(0, topK);
 }
 
-// Search Supabase database for legal sections
 async function searchSupabaseDatabase(supabase: any, query: string, caseType: string, country: string, topK: number = 5): Promise<LegalSection[]> {
   const queryLower = query.toLowerCase();
   const queryWords = queryLower.split(/\s+/).filter(w => w.length > 3);
-  
-  // Skip database query if no valid search words
-  if (queryWords.length === 0) {
-    console.log('No valid query words for database search, skipping');
-    return [];
-  }
+  if (queryWords.length === 0) return [];
   
   try {
-    // Build query with country filter
     let query_builder = supabase
       .from('legal_sections')
       .select('*')
       .eq('country', country);
     
-    // Only add OR filter if we have words
     if (queryWords.length > 0) {
       query_builder = query_builder.or(queryWords.map(w => `content.ilike.%${w}%`).join(','));
     }
     
     const { data, error } = await query_builder.limit(topK * 2);
-    
-    if (error) {
-      console.error('Supabase search error:', error);
-      return [];
-    }
-    
-    if (!data || data.length === 0) {
-      return [];
-    }
+    if (error) { console.error('Supabase search error:', error); return []; }
+    if (!data || data.length === 0) return [];
     
     const scored = data.map((section: any) => {
       let score = 0;
-      
-      if (section.category?.toLowerCase().includes(caseType.toLowerCase())) {
-        score += 5;
-      }
-      
+      if (section.category?.toLowerCase().includes(caseType.toLowerCase())) score += 5;
       (section.keywords || []).forEach((keyword: string) => {
-        if (queryLower.includes(keyword.toLowerCase())) {
-          score += 3;
-        }
+        if (queryLower.includes(keyword.toLowerCase())) score += 3;
       });
-      
       queryWords.forEach(word => {
-        if (section.content?.toLowerCase().includes(word)) {
-          score += 1;
-        }
-        if (section.title?.toLowerCase().includes(word)) {
-          score += 2;
-        }
+        if (section.content?.toLowerCase().includes(word)) score += 1;
+        if (section.title?.toLowerCase().includes(word)) score += 2;
       });
-      
       return { ...section, score, source: 'database' };
     });
     
-    return scored
-      .filter((s: any) => s.score > 0)
-      .sort((a: any, b: any) => b.score - a.score)
-      .slice(0, topK);
+    return scored.filter((s: any) => s.score > 0).sort((a: any, b: any) => b.score - a.score).slice(0, topK);
   } catch (error) {
     console.error('Database search error:', error);
+    return [];
+  }
+}
+
+// Indian Kanoon API search (official Indian legal portal)
+async function searchIndianKanoon(query: string, topK: number = 5): Promise<LegalSection[]> {
+  try {
+    console.log('Step 3: Searching Indian Kanoon for:', query);
+    
+    // Use Indian Kanoon's search page and parse results
+    const searchUrl = `https://api.indiankanoon.org/search/?formInput=${encodeURIComponent(query)}&pagenum=0`;
+    
+    // Try the public search endpoint
+    const resp = await fetch(`https://indiankanoon.org/search/?formInput=${encodeURIComponent(query)}`, {
+      headers: {
+        'User-Agent': 'LawBoard-Legal-AI/1.0',
+        'Accept': 'text/html',
+      },
+    });
+    
+    if (!resp.ok) {
+      console.log('Indian Kanoon returned status:', resp.status);
+      return [];
+    }
+    
+    const html = await resp.text();
+    const results: LegalSection[] = [];
+    
+    // Parse search results from HTML - extract case titles and snippets
+    const resultBlocks = html.split('<div class="result_title">');
+    
+    for (let i = 1; i < Math.min(resultBlocks.length, topK + 1); i++) {
+      const block = resultBlocks[i];
+      
+      // Extract title
+      const titleMatch = block.match(/<a[^>]*>([^<]+)<\/a>/);
+      const title = titleMatch ? titleMatch[1].trim().replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>') : `Indian Kanoon Result ${i}`;
+      
+      // Extract snippet/content  
+      const snippetMatch = block.match(/<div class="result_text">([^]*?)<\/div>/);
+      let content = snippetMatch ? snippetMatch[1].replace(/<[^>]+>/g, '').trim().slice(0, 500) : '';
+      
+      if (!content) {
+        // Try alternate snippet pattern
+        const altSnippet = block.match(/<div[^>]*class="[^"]*snippet[^"]*"[^>]*>([^]*?)<\/div>/);
+        content = altSnippet ? altSnippet[1].replace(/<[^>]+>/g, '').trim().slice(0, 500) : 'See Indian Kanoon for full text.';
+      }
+      
+      if (title && title.length > 3) {
+        results.push({
+          section: `Indian Kanoon: ${title.slice(0, 100)}`,
+          title: title.slice(0, 150),
+          content: content || 'Refer to Indian Kanoon portal for full judgment text.',
+          keywords: query.toLowerCase().split(/\s+/).filter(w => w.length > 3),
+          category: 'Case Law',
+          source: 'indian_kanoon',
+        });
+      }
+    }
+    
+    console.log(`Indian Kanoon returned ${results.length} results`);
+    return results;
+  } catch (error) {
+    console.error('Indian Kanoon search error:', error);
     return [];
   }
 }
@@ -214,40 +203,55 @@ async function cascadingLegalSearch(
   query: string,
   caseType: string,
   country: string,
-  minResults: number = 3
-): Promise<{ sections: LegalSection[], sources: string[] }> {
+  minResults: number = 3,
+  deepSearch: boolean = false
+): Promise<{ sections: LegalSection[], sources: string[], searchLevels: number }> {
   const sources: string[] = [];
   let allSections: LegalSection[] = [];
+  let searchLevels = 0;
   
-  // Step 1: Search local corpus
+  // Step 1: Search local corpus (always)
   console.log(`Step 1: Searching local corpus for ${country}...`);
-  const localResults = retrieveFromLocalCorpus(query, caseType, country, 6);
+  const localResults = retrieveFromLocalCorpus(query, caseType, country, deepSearch ? 10 : 6);
   if (localResults.length > 0) {
     sources.push('local_corpus');
     allSections = [...allSections, ...localResults];
-    console.log(`Found ${localResults.length} results in local corpus`);
   }
+  searchLevels++;
   
-  // Step 2: Search Supabase database
-  if (allSections.length < minResults) {
+  // Step 2: Search Supabase database (always in deep, or if not enough)
+  if (deepSearch || allSections.length < minResults) {
     console.log('Step 2: Searching database...');
-    const dbResults = await searchSupabaseDatabase(supabase, query, caseType, country, 5);
+    const dbResults = await searchSupabaseDatabase(supabase, query, caseType, country, deepSearch ? 10 : 5);
     if (dbResults.length > 0) {
       sources.push('database');
       const existingSections = new Set(allSections.map(s => s.section));
       const uniqueDbResults = dbResults.filter(s => !existingSections.has(s.section));
       allSections = [...allSections, ...uniqueDbResults];
-      console.log(`Found ${dbResults.length} results in database (${uniqueDbResults.length} unique)`);
     }
+    searchLevels++;
+  }
+  
+  // Step 3: Indian Kanoon (for India) - always in deep search, or if insufficient results
+  if (country === 'india' && (deepSearch || allSections.length < minResults)) {
+    console.log('Step 3: Searching Indian Kanoon...');
+    const kanoonResults = await searchIndianKanoon(query, deepSearch ? 8 : 5);
+    if (kanoonResults.length > 0) {
+      sources.push('indian_kanoon');
+      const existingSections = new Set(allSections.map(s => s.section));
+      const uniqueResults = kanoonResults.filter(s => !existingSections.has(s.section));
+      allSections = [...allSections, ...uniqueResults];
+    }
+    searchLevels++;
   }
   
   return {
-    sections: allSections.slice(0, 10),
-    sources
+    sections: allSections.slice(0, deepSearch ? 20 : 10),
+    sources,
+    searchLevels,
   };
 }
 
-// NER tool definition for extracting case entities
 const NER_TOOL = {
   type: "function",
   function: {
@@ -279,19 +283,12 @@ Deno.serve(async (req) => {
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY not configured');
-    }
-    
-    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-      throw new Error('Supabase credentials not configured');
-    }
+    if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY not configured');
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) throw new Error('Supabase credentials not configured');
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-
     const body = await req.json();
     
-    // Input validation
     const VALID_COUNTRIES = ['india', 'usa', 'russia', 'china', 'japan', 'uk'];
     const VALID_ROLES = ['user', 'lawyer'];
     const MAX_MESSAGE_LENGTH = 5000;
@@ -305,22 +302,21 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Validate each message
     const MAX_ASSISTANT_MESSAGE_LENGTH = 50000;
     for (const msg of messages) {
       if (!msg || typeof msg.content !== 'string' || msg.content.length === 0) {
-        return new Response(JSON.stringify({ error: 'Invalid message content: must be a non-empty string' }), {
+        return new Response(JSON.stringify({ error: 'Invalid message content' }), {
           status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
       if (!['user', 'assistant'].includes(msg.role)) {
-        return new Response(JSON.stringify({ error: 'Invalid message role: must be user or assistant' }), {
+        return new Response(JSON.stringify({ error: 'Invalid message role' }), {
           status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
       const maxLen = msg.role === 'user' ? MAX_MESSAGE_LENGTH : MAX_ASSISTANT_MESSAGE_LENGTH;
       if (msg.content.length > maxLen) {
-        return new Response(JSON.stringify({ error: `Invalid ${msg.role} message: exceeds ${maxLen} character limit` }), {
+        return new Response(JSON.stringify({ error: `Message exceeds ${maxLen} char limit` }), {
           status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
@@ -330,6 +326,7 @@ Deno.serve(async (req) => {
     const userRole = VALID_ROLES.includes(body.userRole) ? body.userRole : 'user';
     const caseType = typeof body.caseType === 'string' ? body.caseType.slice(0, MAX_CASE_TYPE_LENGTH) : 'Criminal';
     const conversationId = typeof body.conversationId === 'string' ? body.conversationId.slice(0, 100) : undefined;
+    const deepSearch = body.deepSearch === true;
 
     // Handle document attachment
     const documentAttachment = body.documentAttachment;
@@ -339,23 +336,18 @@ Deno.serve(async (req) => {
       const docName = typeof documentAttachment.name === 'string' ? documentAttachment.name.slice(0, 200) : 'unknown';
       const docType = typeof documentAttachment.type === 'string' ? documentAttachment.type.slice(0, 100) : 'unknown';
       documentContext = `\n\n---\n📎 **ATTACHED DOCUMENT: "${docName}"** (Type: ${docType})\n\n${docText}\n---\n`;
-      console.log(`Document attached: ${docName} (${docType}), ${docText.length} chars`);
     }
 
     const lastUserMessage = messages.filter((m: any) => m.role === 'user').pop();
     const userQuery = lastUserMessage?.content || '';
 
-    // Perform cascading search
-    console.log(`Starting cascading legal search for ${country}:`, userQuery);
-    const { sections: relevantSections, sources } = await cascadingLegalSearch(
-      supabase,
-      userQuery,
-      caseType || 'Criminal',
-      country,
-      3
+    // Perform cascading search with deep search flag
+    console.log(`Starting ${deepSearch ? 'DEEP' : 'standard'} legal search for ${country}:`, userQuery);
+    const { sections: relevantSections, sources, searchLevels } = await cascadingLegalSearch(
+      supabase, userQuery, caseType || 'Criminal', country, 3, deepSearch
     );
     
-    console.log(`Found ${relevantSections.length} relevant sections from sources: ${sources.join(', ')}`);
+    console.log(`Found ${relevantSections.length} sections from ${searchLevels} levels: ${sources.join(', ')}`);
 
     const legalContext = relevantSections.length > 0
       ? relevantSections
@@ -364,107 +356,66 @@ Deno.serve(async (req) => {
       : 'No specific legal provisions found. Please provide more details about your case.';
 
     const sourcesNote = sources.length > 0
-      ? `\n\n*Data retrieved from: ${sources.map(s => s.replace('_', ' ')).join(', ')}*`
+      ? `\n\n*Data retrieved from: ${sources.map(s => s.replace('_', ' ')).join(', ')} (${searchLevels} database levels searched)*`
       : '';
 
     const countryInfo = COUNTRY_INFO[country] || COUNTRY_INFO['india'];
 
-    // Different system prompts for User vs Lawyer modes
+    const deepSearchInstruction = deepSearch ? `\n\n**⚡ DEEP SEARCH MODE ACTIVE:**
+You have been given results from ALL available database levels (${searchLevels} levels searched: ${sources.join(', ')}).
+- Provide an EXHAUSTIVE legal analysis with every applicable section, precedent, and provision.
+- After listing all found laws, ASK the user: "Do you have any other leads, keywords, or specific legal areas you'd like me to investigate further?"
+- Be thorough and leave no stone unturned. This is a deep investigation.
+- Organize results by source and relevance.
+- If Indian Kanoon results are included, cite the case names and relevant holdings.` : '';
+
     let systemPrompt: string;
     
     if (userRole === 'user') {
-      // USER MODE: Emotional, supportive, safety-first approach
-      systemPrompt = `You are a compassionate legal support assistant helping someone who may be in distress or an emergency situation in ${countryInfo.name}.
+      systemPrompt = `You are a compassionate legal support assistant helping someone in ${countryInfo.name}.
 
 **YOUR PRIORITY ORDER:**
-1. 🚨 SAFETY FIRST - If the user seems to be in danger, IMMEDIATELY tell them to:
-   - Get to a safe location if possible
-   - If they cannot move safely, stay hidden in a secure spot
-   - Call emergency services (Police/Emergency number)
-   
-2. 💙 BE EMOTIONALLY SUPPORTIVE - This person may be scared, confused, or traumatized
-   - Use warm, reassuring language
-   - Acknowledge their feelings ("I understand this is frightening...")
-   - Remind them they're not alone
-   - Use phrases like "You're doing the right thing by seeking help"
-   
-3. 🛡️ REASSURE ABOUT LEGAL PROTECTIONS - Especially for witnesses:
-   - Emphasize witness protection laws
-   - Explain that their identity can be protected
-   - Reassure that cooperating with authorities is the right choice
-   - Mention that threatening witnesses is a serious crime
+1. 🚨 SAFETY FIRST - If the user seems to be in danger, tell them to get to safety and call emergency services.
+2. 💙 BE EMOTIONALLY SUPPORTIVE - Use warm, reassuring language.
+3. 🛡️ REASSURE ABOUT LEGAL PROTECTIONS
 
 **Communication Style:**
-- Use simple, clear language (avoid legal jargon)
-- Be warm and human - use empathetic phrases
-- Break down steps clearly with numbers or bullets
-- Include relevant emojis for visual comfort (🙏 💙 ✅ etc.)
-- Ask ONE question at a time to not overwhelm them
+- Simple, clear language (avoid jargon)
+- Warm and human - use empathetic phrases
+- Break down steps with numbers or bullets
+- Include relevant emojis for visual comfort
+- Ask ONE question at a time
 - Always end with reassurance
 
 **Relevant Legal Provisions for ${countryInfo.name}:**
-${legalContext}${sourcesNote}
+${legalContext}${sourcesNote}${deepSearchInstruction}
 
 **Case Type:** ${caseType || 'Emergency'}
 **Jurisdiction:** ${countryInfo.name}
-${documentContext ? `\n**DOCUMENT ANALYSIS INSTRUCTIONS:**\nThe user has attached a document. Analyze it thoroughly:\n- Identify the document type (FIR, affidavit, contract, notice, court order, etc.)\n- Check for legal accuracy, completeness, and proper formatting\n- Highlight any issues, missing information, or areas of concern\n- Explain the document's implications in simple terms\n- Suggest next steps based on the document content\n${documentContext}` : ''}
+${documentContext ? `\n**DOCUMENT ANALYSIS:**\nAnalyze the attached document thoroughly - identify type, check accuracy, highlight issues, explain implications simply.\n${documentContext}` : ''}
 
-Remember: Be like a caring friend who happens to know the law. Safety and emotional wellbeing come first, legal details second.`;
+Remember: Safety and emotional wellbeing first, legal details second.`;
     } else {
-    // LAWYER MODE: Criminal lawyer case analysis
-      systemPrompt = `You are a highly experienced criminal lawyer and legal strategist practicing in ${countryInfo.name}, specializing in ${countryInfo.lawSystem}.
+      systemPrompt = `You are a highly experienced criminal lawyer and legal strategist in ${countryInfo.name}, specializing in ${countryInfo.lawSystem}.
 
-**RULES OF BEHAVIOR:**
-- Be serious, professional, logical, and evidence-driven.
-- Do not give emotional comfort unless strategically required for legal mitigation.
-- Do not give false hope. Do not speculate without clearly stating uncertainty.
-- Always think in terms of law, proof, admissibility, and strategy.
+**RULES:** Be serious, professional, logical, evidence-driven. No false hope. Think in terms of law, proof, admissibility, strategy.
 
-**CASE ANALYSIS FLOW (MANDATORY):**
-
-**1. CASE UNDERSTANDING** — Identify and confirm:
-- Who is the victim? Who is the client? What is their relationship?
-- What exactly happened? When and where?
-- Is the client accused, witness, or suspect?
-- Has a complaint or FIR been registered?
-- What sections of law may apply?
-If any information is missing, ask precise follow-up questions.
-
-**2. EVIDENCE COLLECTION & VERIFICATION** — Actively ask for:
-- Medical reports, forensic reports, fingerprint reports
-- Documentation, official records, witness statements
-- Audio/video recordings
-For every piece of evidence, evaluate: authenticity, source, chain of custody, possibility of tampering, legal admissibility.
-
-**3. VIDEO / MEDIA ANALYSIS** — If media is provided:
-- Analyze in extreme detail for manipulation or deepfake signs
-- Check facial inconsistencies, frame mismatches, audio-video sync, metadata, AI artifacts
-- State whether media appears authentic, suspicious, or inconclusive
-
-**4. OPPONENT ARGUMENT HANDLING:**
-- Analyze opposing claims, identify logical flaws, legal weaknesses, evidentiary gaps
-- If opponent presents fake/manipulated evidence, explain legal implications of wrongful evidence submission
-
-**5. CLIENT GUILT ASSESSMENT:**
-- If evidence suggests guilt: be honest, shift to damage control, focus on reducing punishment, plea strategies, mitigating circumstances
-- If evidence suggests innocence: aggressively defend, challenge prosecution evidence, emphasize burden of proof and reasonable doubt
-
-**6. LEGAL STRATEGY MODE:**
-- Build arguments, anticipate counterarguments
-- Ask for missing proofs
-- Decide whether to defend aggressively or mitigate damage
-- Speak as if preparing for trial
-
-**CONSTRAINTS:** You are not a judge. You do not give final verdicts. You act strictly as a legal advocate and analyst within realistic legal reasoning.
+**CASE ANALYSIS FLOW:**
+1. CASE UNDERSTANDING - Identify victim, client, relationship, facts, timeline, sections of law
+2. EVIDENCE COLLECTION - Ask for medical/forensic/fingerprint reports, documents, recordings. Evaluate authenticity, admissibility.
+3. MEDIA ANALYSIS - Check for manipulation/deepfake signs if media provided
+4. OPPONENT HANDLING - Identify flaws, weaknesses, evidentiary gaps in opposing arguments
+5. GUILT ASSESSMENT - Honest assessment, shift strategy accordingly
+6. LEGAL STRATEGY - Build arguments, anticipate counterarguments, prepare for trial
 
 **Relevant Legal Provisions (${countryInfo.name}):**
-${legalContext}${sourcesNote}
+${legalContext}${sourcesNote}${deepSearchInstruction}
 
 **Case Type:** ${caseType || 'Not specified'}
 **Jurisdiction:** ${countryInfo.name}
-${documentContext ? `\n**DOCUMENT ANALYSIS INSTRUCTIONS:**\nThe user has attached a document as evidence or for review. Analyze it with extreme legal scrutiny:\n- Identify the document type and its legal standing\n- Verify legal citations, section references, and procedural compliance\n- Assess authenticity indicators and admissibility as evidence\n- Identify weaknesses an opponent could exploit\n- Evaluate its strategic value for the case\n- Check for any missing signatures, dates, stamps, or required elements\n${documentContext}` : ''}
+${documentContext ? `\n**DOCUMENT ANALYSIS:**\nAnalyze with extreme legal scrutiny - verify citations, assess authenticity, identify weaknesses, evaluate strategic value.\n${documentContext}` : ''}
 
-BEGIN by summarizing the case as you currently understand it from the conversation, then ask for the most critical missing legal details. All citations should be verified by the practitioner.`;
+All citations should be verified by the practitioner.`;
     }
 
     const requestBody: any = {
@@ -474,23 +425,14 @@ BEGIN by summarizing the case as you currently understand it from the conversati
         ...messages
       ],
       stream: true,
-      temperature: 0.7,
-      max_tokens: 2000
+      temperature: deepSearch ? 0.5 : 0.7,
+      max_tokens: deepSearch ? 4000 : 2000
     };
 
     if (messages.length <= 6) {
       requestBody.tools = [NER_TOOL];
       requestBody.tool_choice = "auto";
     }
-
-    console.log('Sending request to Lovable AI with context:', {
-      messageCount: messages.length,
-      relevantSectionsCount: relevantSections.length,
-      sources,
-      caseType,
-      country,
-      userRole
-    });
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -503,19 +445,17 @@ BEGIN by summarizing the case as you currently understand it from the conversati
 
     if (!response.ok) {
       if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again later." }), {
-          status: 429,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        return new Response(JSON.stringify({ error: "Rate limit exceeded." }), {
+          status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
       if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "AI credits exhausted. Please add credits to continue." }), {
-          status: 402,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        return new Response(JSON.stringify({ error: "AI credits exhausted." }), {
+          status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
       const errorText = await response.text();
-      console.error('Lovable AI error:', response.status, errorText);
+      console.error('AI error:', response.status, errorText);
       throw new Error(`AI gateway error: ${response.status}`);
     }
 
@@ -532,10 +472,7 @@ BEGIN by summarizing the case as you currently understand it from the conversati
     console.error('Chat error:', error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      }
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });

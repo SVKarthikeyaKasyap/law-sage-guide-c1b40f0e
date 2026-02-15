@@ -12,6 +12,7 @@ interface UseStreamingChatProps {
   caseType: string;
   country?: string;
   role?: 'user' | 'lawyer';
+  deepSearch?: boolean;
   onMessagesUpdate: (messages: Message[]) => void;
 }
 
@@ -20,6 +21,7 @@ export const useStreamingChat = ({
   caseType,
   country = 'india',
   role = 'user',
+  deepSearch = false,
   onMessagesUpdate
 }: UseStreamingChatProps) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -57,6 +59,7 @@ export const useStreamingChat = ({
           caseType,
           country,
           userRole: role,
+          deepSearch,
           ...(fileContent ? { documentAttachment: { name: fileContent.name, text: fileContent.text, type: fileContent.type } } : {})
         }),
       });
@@ -160,7 +163,7 @@ export const useStreamingChat = ({
     } finally {
       setIsLoading(false);
     }
-  }, [conversationId, caseType, country, role, onMessagesUpdate]);
+  }, [conversationId, caseType, country, role, deepSearch, onMessagesUpdate]);
 
   return { sendMessage, isLoading };
 };
