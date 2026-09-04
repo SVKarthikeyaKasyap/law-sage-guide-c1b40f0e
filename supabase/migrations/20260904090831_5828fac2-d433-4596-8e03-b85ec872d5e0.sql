@@ -1,0 +1,10 @@
+REVOKE ALL ON public.conversations FROM anon, authenticated;
+REVOKE ALL ON public.messages FROM anon, authenticated;
+REVOKE ALL ON public.generated_documents FROM anon, authenticated;
+REVOKE ALL ON public.message_feedback FROM anon, authenticated;
+REVOKE ALL ON public.legal_sections FROM anon, authenticated;
+GRANT ALL ON public.conversations TO service_role;
+GRANT ALL ON public.messages TO service_role;
+GRANT ALL ON public.generated_documents TO service_role;
+GRANT ALL ON public.message_feedback TO service_role;
+GRANT ALL ON public.legal_sections TO service_role;
