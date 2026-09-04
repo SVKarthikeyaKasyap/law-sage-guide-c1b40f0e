@@ -162,44 +162,94 @@ function retrieveFromLocalCorpus(
 }
 
 
-async function searchSupabaseDatabase(supabase: any, query: string, caseType: string, country: string, topK: number = 5): Promise<LegalSection[]> {
-  const queryLower = query.toLowerCase();
-  const queryWords = queryLower.split(/\s+/).filter(w => w.length > 3);
+const COUNTRY_INFO: Record<string, { name: string; lawSystem: string }> = {
+  india: { name: "India", lawSystem: "Bharatiya Nyaya Sanhita (BNS), BNSS, and the Constitution" },
+  usa: { name: "United States", lawSystem: "US Code, State Laws, and Constitutional Rights" },
+  russia: { name: "Russia", lawSystem: "Criminal Code of the Russian Federation" },
+  china: { name: "China", lawSystem: "Criminal Law of the People's Republic of China" },
+  japan: { name: "Japan", lawSystem: "Japanese Penal Code and Immigration Control Act" },
+  uk: { name: "United Kingdom", lawSystem: "Common Law, Statutory Law, and Human Rights Act" }
+};
+
+// Shared database fetch. Restricts to a single Layer 1 shard, or scans the full corpus.
+async function queryLegalSections(
+  supabase: any,
+  query: string,
+  country: string,
+  topK: number,
+  opts: { shard?: { domain?: string; userTrack?: string }; tier?: number }
+): Promise<LegalSection[]> {
+  const queryWords = (query || '').toLowerCase().split(/\s+/).filter(w => w.length > 3);
   if (queryWords.length === 0) return [];
-  
+
   try {
-    let query_builder = supabase
-      .from('legal_sections')
-      .select('*')
-      .eq('country', country);
-    
-    if (queryWords.length > 0) {
-      query_builder = query_builder.or(queryWords.map(w => `content.ilike.%${w}%`).join(','));
-    }
-    
-    const { data, error } = await query_builder.limit(topK * 2);
-    if (error) { console.error('Supabase search error:', error); return []; }
+    let builder = supabase.from('legal_sections').select('*').eq('country', country);
+
+    if (opts.tier) builder = builder.eq('tier', opts.tier);
+    if (opts.shard?.userTrack) builder = builder.eq('user_track', opts.shard.userTrack);
+    else if (opts.shard?.domain) builder = builder.eq('domain', opts.shard.domain);
+
+    builder = builder.or(
+      queryWords.map(w => `content.ilike.%${w}%`).concat(
+        queryWords.map(w => `title.ilike.%${w}%`)
+      ).join(',')
+    );
+
+    const { data, error } = await builder.limit(topK * 4);
+    if (error) { console.error('Legal sections query error:', error); return []; }
     if (!data || data.length === 0) return [];
-    
-    const scored = data.map((section: any) => {
-      let score = 0;
-      if (section.category?.toLowerCase().includes(caseType.toLowerCase())) score += 5;
-      (section.keywords || []).forEach((keyword: string) => {
-        if (queryLower.includes(keyword.toLowerCase())) score += 3;
-      });
-      queryWords.forEach(word => {
-        if (section.content?.toLowerCase().includes(word)) score += 1;
-        if (section.title?.toLowerCase().includes(word)) score += 2;
-      });
-      return { ...section, score, source: 'database' };
-    });
-    
-    return scored.filter((s: any) => s.score > 0).sort((a: any, b: any) => b.score - a.score).slice(0, topK);
+
+    return scoreSections(
+      data.map((d: any) => ({ ...d, source: d.source === 'scraped' ? 'scraped' : 'database' })),
+      query
+    ).slice(0, topK);
   } catch (error) {
-    console.error('Database search error:', error);
+    console.error('Legal sections query failed:', error);
     return [];
   }
 }
+
+// LAYER 1 — selected shard only (tier 1 database rows + matching local corpus)
+async function searchShard(
+  supabase: any,
+  query: string,
+  country: string,
+  shard: { domain?: string; userTrack?: string },
+  topK: number
+): Promise<LegalSection[]> {
+  const [local, db] = await Promise.all([
+    Promise.resolve(retrieveFromLocalCorpus(query, country, topK, shard)),
+    queryLegalSections(supabase, query, country, topK, { shard, tier: 1 }),
+  ]);
+  return dedupe([...local, ...db]).slice(0, topK);
+}
+
+// LAYER 2 — complete combined index, all domains and tiers
+async function searchFullIndex(
+  supabase: any,
+  query: string,
+  country: string,
+  topK: number
+): Promise<LegalSection[]> {
+  const [local, db] = await Promise.all([
+    Promise.resolve(retrieveFromLocalCorpus(query, country, topK)),
+    queryLegalSections(supabase, query, country, topK, {}),
+  ]);
+  return dedupe([...local, ...db]).slice(0, topK);
+}
+
+function dedupe(sections: LegalSection[]): LegalSection[] {
+  const seen = new Set<string>();
+  const out: LegalSection[] = [];
+  for (const s of sections.sort((a, b) => (b.score || 0) - (a.score || 0))) {
+    const key = `${s.section}`.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(s);
+  }
+  return out;
+}
+
 
 // Indian Kanoon API search (official Indian legal portal)
 async function searchIndianKanoon(query: string, topK: number = 5): Promise<LegalSection[]> {
