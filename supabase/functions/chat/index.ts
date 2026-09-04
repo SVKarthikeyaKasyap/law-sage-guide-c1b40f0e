@@ -605,11 +605,16 @@ All citations should be verified by the practitioner.`;
     return new Response(response.body, {
       headers: {
         ...corsHeaders,
+        'Access-Control-Expose-Headers': 'x-search-layer, x-search-layer-label, x-search-confidence',
+        'x-search-layer': String(layer),
+        'x-search-layer-label': layerLabel,
+        'x-search-confidence': confidence.toFixed(2),
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
         'Connection': 'keep-alive',
       },
     });
+
 
   } catch (error) {
     console.error('Chat error:', error);
