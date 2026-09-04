@@ -531,7 +531,7 @@ You have been given results from ALL available layers (${layerLabel}; sources: $
 - Always end with reassurance
 
 **Relevant Legal Provisions for ${countryInfo.name}:**
-${legalContext}${sourcesNote}${deepSearchInstruction}
+${legalContext}${sourcesNote}${layerNote}${deepSearchInstruction}
 
 **Case Type:** ${caseType || 'Emergency'}
 **Jurisdiction:** ${countryInfo.name}
