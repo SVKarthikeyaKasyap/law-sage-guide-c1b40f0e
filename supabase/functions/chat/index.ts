@@ -552,7 +552,7 @@ Remember: Safety and emotional wellbeing first, legal details second.`;
 6. LEGAL STRATEGY - Build arguments, anticipate counterarguments, prepare for trial
 
 **Relevant Legal Provisions (${countryInfo.name}):**
-${legalContext}${sourcesNote}${deepSearchInstruction}
+${legalContext}${sourcesNote}${layerNote}${deepSearchInstruction}
 
 **Case Type:** ${caseType || 'Not specified'}
 **Jurisdiction:** ${countryInfo.name}
