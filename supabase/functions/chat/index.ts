@@ -315,60 +315,80 @@ async function searchIndianKanoon(query: string, topK: number = 5): Promise<Lega
   }
 }
 
-// Main cascading search function
-async function cascadingLegalSearch(
+// Tiered cascade: Layer 1 (selected shard) -> Layer 2 (full corpus) -> Layer 3 (live search)
+async function tieredLegalSearch(
   supabase: any,
   query: string,
   caseType: string,
   country: string,
-  minResults: number = 3,
   deepSearch: boolean = false
-): Promise<{ sections: LegalSection[], sources: string[], searchLevels: number }> {
+): Promise<{
+  sections: LegalSection[];
+  sources: string[];
+  layer: 1 | 2 | 3;
+  layerLabel: string;
+  confidence: number;
+  shardLabel: string;
+}> {
+  const shard = resolveShard(caseType);
+  const topK = deepSearch ? 12 : 6;
   const sources: string[] = [];
-  let allSections: LegalSection[] = [];
-  let searchLevels = 0;
-  
-  // Step 1: Search local corpus (always)
-  console.log(`Step 1: Searching local corpus for ${country}...`);
-  const localResults = retrieveFromLocalCorpus(query, caseType, country, deepSearch ? 10 : 6);
-  if (localResults.length > 0) {
-    sources.push('local_corpus');
-    allSections = [...allSections, ...localResults];
+
+  // ---- LAYER 1: selected shard only. No lateral search across other shards. ----
+  console.log(`Layer 1: shard "${shard.userTrack || shard.domain}" (${country})`);
+  const layer1 = await searchShard(supabase, query, country, shard, topK);
+  const c1 = confidenceOf(layer1);
+  console.log(`Layer 1 confidence: ${c1.toFixed(2)} (threshold ${LAYER1_THRESHOLD}) — ${layer1.length} sections`);
+
+  if (!deepSearch && c1 >= LAYER1_THRESHOLD) {
+    layer1.forEach(s => { if (s.source && !sources.includes(s.source)) sources.push(s.source); });
+    return {
+      sections: layer1,
+      sources,
+      layer: 1,
+      layerLabel: `Layer 1 · ${shard.label}`,
+      confidence: c1,
+      shardLabel: shard.label,
+    };
   }
-  searchLevels++;
-  
-  // Step 2: Search Supabase database (always in deep, or if not enough)
-  if (deepSearch || allSections.length < minResults) {
-    console.log('Step 2: Searching database...');
-    const dbResults = await searchSupabaseDatabase(supabase, query, caseType, country, deepSearch ? 10 : 5);
-    if (dbResults.length > 0) {
-      sources.push('database');
-      const existingSections = new Set(allSections.map(s => s.section));
-      const uniqueDbResults = dbResults.filter(s => !existingSections.has(s.section));
-      allSections = [...allSections, ...uniqueDbResults];
-    }
-    searchLevels++;
+
+  // ---- LAYER 2: complete combined index, any domain ----
+  console.log('Layer 2: full legal corpus...');
+  const layer2 = dedupe([...layer1, ...(await searchFullIndex(supabase, query, country, topK * 2))]);
+  const c2 = confidenceOf(layer2);
+  console.log(`Layer 2 confidence: ${c2.toFixed(2)} (threshold ${LAYER2_THRESHOLD}) — ${layer2.length} sections`);
+
+  if (!deepSearch && c2 >= LAYER2_THRESHOLD) {
+    layer2.forEach(s => { if (s.source && !sources.includes(s.source)) sources.push(s.source); });
+    return {
+      sections: layer2.slice(0, topK * 2),
+      sources,
+      layer: 2,
+      layerLabel: 'Layer 2 · Full Legal Corpus',
+      confidence: c2,
+      shardLabel: shard.label,
+    };
   }
-  
-  // Step 3: Indian Kanoon (for India) - always in deep search, or if insufficient results
-  if (country === 'india' && (deepSearch || allSections.length < minResults)) {
-    console.log('Step 3: Searching Indian Kanoon...');
-    const kanoonResults = await searchIndianKanoon(query, deepSearch ? 8 : 5);
-    if (kanoonResults.length > 0) {
-      sources.push('indian_kanoon');
-      const existingSections = new Set(allSections.map(s => s.section));
-      const uniqueResults = kanoonResults.filter(s => !existingSections.has(s.section));
-      allSections = [...allSections, ...uniqueResults];
-    }
-    searchLevels++;
+
+  // ---- LAYER 3: live search (last resort) ----
+  let combined = layer2;
+  if (country === 'india') {
+    console.log('Layer 3: live Indian Kanoon search...');
+    const live = scoreSections(await searchIndianKanoon(query, deepSearch ? 8 : 5), query);
+    combined = dedupe([...combined, ...live.map(s => ({ ...s, source: 'indian_kanoon' }))]);
   }
-  
+  combined.forEach(s => { if (s.source && !sources.includes(s.source)) sources.push(s.source); });
+
   return {
-    sections: allSections.slice(0, deepSearch ? 20 : 10),
+    sections: combined.slice(0, deepSearch ? 25 : 12),
     sources,
-    searchLevels,
+    layer: 3,
+    layerLabel: 'Layer 3 · Live Legal Search',
+    confidence: confidenceOf(combined),
+    shardLabel: shard.label,
   };
 }
+
 
 const NER_TOOL = {
   type: "function",
