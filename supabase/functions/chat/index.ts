@@ -62,37 +62,105 @@ interface LegalSection {
   keywords: string[];
   category: string;
   source?: string;
+  score?: number;
+  domain?: string;
+  user_track?: string;
+  tier?: number;
 }
 
-const COUNTRY_INFO: Record<string, { name: string; lawSystem: string }> = {
-  india: { name: "India", lawSystem: "Indian Penal Code (IPC), CrPC, and Constitution" },
-  usa: { name: "United States", lawSystem: "US Code, State Laws, and Constitutional Rights" },
-  russia: { name: "Russia", lawSystem: "Criminal Code of the Russian Federation" },
-  china: { name: "China", lawSystem: "Criminal Law of the People's Republic of China" },
-  japan: { name: "Japan", lawSystem: "Japanese Penal Code and Immigration Control Act" },
-  uk: { name: "United Kingdom", lawSystem: "Common Law, Statutory Law, and Human Rights Act" }
-};
+// ===== Tiered search configuration =====
+const LAYER1_THRESHOLD = 0.55; // confidence needed to answer from the selected shard
+const LAYER2_THRESHOLD = 0.35; // confidence needed to answer from the full corpus
+const SCORE_NORMALIZER = 14;   // raw score that maps to confidence 1.0
 
-function retrieveFromLocalCorpus(query: string, caseType: string, country: string, topK: number = 5): LegalSection[] {
-  const queryLower = query.toLowerCase();
+const LAWYER_DOMAINS = ['criminal', 'civil', 'family', 'consumer', 'labor', 'other'];
+const USER_TRACKS = ['general_emergency', 'transportation_immigration'];
+
+// Maps a UI case type to exactly one Layer 1 shard. Never more than one.
+function resolveShard(caseType: string): { domain?: string; userTrack?: string; label: string } {
+  const ct = (caseType || '').toLowerCase().trim();
+
+  if (ct.includes('transport') || ct.includes('immigra')) {
+    return { userTrack: 'transportation_immigration', label: 'Transportation / Immigration' };
+  }
+  if (ct.includes('emergency')) {
+    return { userTrack: 'general_emergency', label: 'General Emergency' };
+  }
+  const domain = LAWYER_DOMAINS.find(d => ct.includes(d)) || 'other';
+  const labels: Record<string, string> = {
+    criminal: 'Criminal Law', civil: 'Civil Law', family: 'Family Law',
+    consumer: 'Consumer Rights', labor: 'Labor Law', other: 'Other Legal',
+  };
+  return { domain, label: labels[domain] };
+}
+
+// Classify a local-corpus entry into the same shard taxonomy as the database
+function classifyCategory(category: string): { domain: string; userTrack: string | null } {
+  const c = (category || '').toLowerCase();
+  if (c.includes('immigration') || c.includes('transport') || c.includes('passport')) {
+    return { domain: 'other', userTrack: 'transportation_immigration' };
+  }
+  if (c.includes('criminal') || c.includes('case law')) {
+    return { domain: 'criminal', userTrack: 'general_emergency' };
+  }
+  if (c.includes('family') || c.includes('marriage')) return { domain: 'family', userTrack: null };
+  if (c.includes('consumer')) return { domain: 'consumer', userTrack: null };
+  if (c.includes('labor') || c.includes('labour') || c.includes('employ')) return { domain: 'labor', userTrack: null };
+  if (c.includes('civil') || c.includes('property') || c.includes('contract')) return { domain: 'civil', userTrack: null };
+  if (c.includes('constitutional')) return { domain: 'other', userTrack: 'general_emergency' };
+  return { domain: 'other', userTrack: null };
+}
+
+// Relevance scoring shared by every layer. Returns normalized confidence 0..1 per section.
+function scoreSections(sections: LegalSection[], query: string): LegalSection[] {
+  const queryLower = (query || '').toLowerCase();
   const queryWords = queryLower.split(/\s+/).filter(w => w.length > 3);
-  const countryCorpus = LEGAL_CORPUS[country] || LEGAL_CORPUS['india'];
-  
-  const scored = countryCorpus.map(section => {
-    let score = 0;
-    if (section.category.toLowerCase().includes(caseType.toLowerCase())) score += 5;
-    section.keywords.forEach(keyword => {
-      if (queryLower.includes(keyword.toLowerCase())) score += 3;
+
+  return sections.map(section => {
+    let raw = 0;
+    (section.keywords || []).forEach(keyword => {
+      const k = keyword.toLowerCase();
+      if (queryLower.includes(k)) raw += k.includes(' ') ? 5 : 3; // exact phrase weighs more
     });
     queryWords.forEach(word => {
-      if (section.content.toLowerCase().includes(word)) score += 1;
-      if (section.title.toLowerCase().includes(word)) score += 2;
+      if (section.title?.toLowerCase().includes(word)) raw += 2;
+      if (section.section?.toLowerCase().includes(word)) raw += 2;
+      if (section.content?.toLowerCase().includes(word)) raw += 1;
     });
-    return { ...section, score, source: 'local' };
-  });
-  
-  return scored.filter(s => s.score > 0).sort((a, b) => b.score - a.score).slice(0, topK);
+    return { ...section, score: Math.min(1, raw / SCORE_NORMALIZER) };
+  })
+  .filter(s => (s.score || 0) > 0)
+  .sort((a, b) => (b.score || 0) - (a.score || 0));
 }
+
+function confidenceOf(sections: LegalSection[]): number {
+  if (sections.length === 0) return 0;
+  const top = sections[0].score || 0;
+  const support = sections.slice(1, 3).reduce((sum, s) => sum + (s.score || 0), 0) / 4;
+  return Math.min(1, top + support);
+}
+
+// Local corpus, restricted to a single shard (Layer 1) or unrestricted (Layer 2)
+function retrieveFromLocalCorpus(
+  query: string,
+  country: string,
+  topK: number = 5,
+  shard?: { domain?: string; userTrack?: string }
+): LegalSection[] {
+  const countryCorpus = LEGAL_CORPUS[country] || LEGAL_CORPUS['india'];
+
+  const tagged = countryCorpus.map(section => {
+    const { domain, userTrack } = classifyCategory(section.category);
+    return { ...section, domain, user_track: userTrack ?? undefined, tier: 1, source: 'local' };
+  });
+
+  const pool = shard
+    ? tagged.filter(s => (shard.userTrack ? s.user_track === shard.userTrack : s.domain === shard.domain))
+    : tagged;
+
+  return scoreSections(pool, query).slice(0, topK);
+}
+
 
 async function searchSupabaseDatabase(supabase: any, query: string, caseType: string, country: string, topK: number = 5): Promise<LegalSection[]> {
   const queryLower = query.toLowerCase();
