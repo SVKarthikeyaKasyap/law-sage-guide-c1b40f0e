@@ -77,35 +77,47 @@ export type Database = {
         Row: {
           category: string | null
           content: string
+          country: string
           created_at: string
+          domain: string
           id: string
           keywords: string[] | null
           section: string
           source: string | null
+          tier: number
           title: string
           updated_at: string
+          user_track: string | null
         }
         Insert: {
           category?: string | null
           content: string
+          country?: string
           created_at?: string
+          domain?: string
           id?: string
           keywords?: string[] | null
           section: string
           source?: string | null
+          tier?: number
           title: string
           updated_at?: string
+          user_track?: string | null
         }
         Update: {
           category?: string | null
           content?: string
+          country?: string
           created_at?: string
+          domain?: string
           id?: string
           keywords?: string[] | null
           section?: string
           source?: string | null
+          tier?: number
           title?: string
           updated_at?: string
+          user_track?: string | null
         }
         Relationships: []
       }

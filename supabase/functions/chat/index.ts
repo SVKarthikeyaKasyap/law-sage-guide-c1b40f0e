@@ -62,10 +62,108 @@ interface LegalSection {
   keywords: string[];
   category: string;
   source?: string;
+  score?: number;
+  domain?: string;
+  user_track?: string;
+  tier?: number;
 }
 
+// ===== Tiered search configuration =====
+const LAYER1_THRESHOLD = 0.55; // confidence needed to answer from the selected shard
+const LAYER2_THRESHOLD = 0.35; // confidence needed to answer from the full corpus
+const SCORE_NORMALIZER = 14;   // raw score that maps to confidence 1.0
+
+const LAWYER_DOMAINS = ['criminal', 'civil', 'family', 'consumer', 'labor', 'other'];
+const USER_TRACKS = ['general_emergency', 'transportation_immigration'];
+
+// Maps a UI case type to exactly one Layer 1 shard. Never more than one.
+function resolveShard(caseType: string): { domain?: string; userTrack?: string; label: string } {
+  const ct = (caseType || '').toLowerCase().trim();
+
+  if (ct.includes('transport') || ct.includes('immigra')) {
+    return { userTrack: 'transportation_immigration', label: 'Transportation / Immigration' };
+  }
+  if (ct.includes('emergency')) {
+    return { userTrack: 'general_emergency', label: 'General Emergency' };
+  }
+  const domain = LAWYER_DOMAINS.find(d => ct.includes(d)) || 'other';
+  const labels: Record<string, string> = {
+    criminal: 'Criminal Law', civil: 'Civil Law', family: 'Family Law',
+    consumer: 'Consumer Rights', labor: 'Labor Law', other: 'Other Legal',
+  };
+  return { domain, label: labels[domain] };
+}
+
+// Classify a local-corpus entry into the same shard taxonomy as the database
+function classifyCategory(category: string): { domain: string; userTrack: string | null } {
+  const c = (category || '').toLowerCase();
+  if (c.includes('immigration') || c.includes('transport') || c.includes('passport')) {
+    return { domain: 'other', userTrack: 'transportation_immigration' };
+  }
+  if (c.includes('criminal') || c.includes('case law')) {
+    return { domain: 'criminal', userTrack: 'general_emergency' };
+  }
+  if (c.includes('family') || c.includes('marriage')) return { domain: 'family', userTrack: null };
+  if (c.includes('consumer')) return { domain: 'consumer', userTrack: null };
+  if (c.includes('labor') || c.includes('labour') || c.includes('employ')) return { domain: 'labor', userTrack: null };
+  if (c.includes('civil') || c.includes('property') || c.includes('contract')) return { domain: 'civil', userTrack: null };
+  if (c.includes('constitutional')) return { domain: 'other', userTrack: 'general_emergency' };
+  return { domain: 'other', userTrack: null };
+}
+
+// Relevance scoring shared by every layer. Returns normalized confidence 0..1 per section.
+function scoreSections(sections: LegalSection[], query: string): LegalSection[] {
+  const queryLower = (query || '').toLowerCase();
+  const queryWords = queryLower.split(/\s+/).filter(w => w.length > 3);
+
+  return sections.map(section => {
+    let raw = 0;
+    (section.keywords || []).forEach(keyword => {
+      const k = keyword.toLowerCase();
+      if (queryLower.includes(k)) raw += k.includes(' ') ? 5 : 3; // exact phrase weighs more
+    });
+    queryWords.forEach(word => {
+      if (section.title?.toLowerCase().includes(word)) raw += 2;
+      if (section.section?.toLowerCase().includes(word)) raw += 2;
+      if (section.content?.toLowerCase().includes(word)) raw += 1;
+    });
+    return { ...section, score: Math.min(1, raw / SCORE_NORMALIZER) };
+  })
+  .filter(s => (s.score || 0) > 0)
+  .sort((a, b) => (b.score || 0) - (a.score || 0));
+}
+
+function confidenceOf(sections: LegalSection[]): number {
+  if (sections.length === 0) return 0;
+  const top = sections[0].score || 0;
+  const support = sections.slice(1, 3).reduce((sum, s) => sum + (s.score || 0), 0) / 4;
+  return Math.min(1, top + support);
+}
+
+// Local corpus, restricted to a single shard (Layer 1) or unrestricted (Layer 2)
+function retrieveFromLocalCorpus(
+  query: string,
+  country: string,
+  topK: number = 5,
+  shard?: { domain?: string; userTrack?: string }
+): LegalSection[] {
+  const countryCorpus = LEGAL_CORPUS[country] || LEGAL_CORPUS['india'];
+
+  const tagged = countryCorpus.map(section => {
+    const { domain, userTrack } = classifyCategory(section.category);
+    return { ...section, domain, user_track: userTrack ?? undefined, tier: 1, source: 'local' };
+  });
+
+  const pool = shard
+    ? tagged.filter(s => (shard.userTrack ? s.user_track === shard.userTrack : s.domain === shard.domain))
+    : tagged;
+
+  return scoreSections(pool, query).slice(0, topK);
+}
+
+
 const COUNTRY_INFO: Record<string, { name: string; lawSystem: string }> = {
-  india: { name: "India", lawSystem: "Indian Penal Code (IPC), CrPC, and Constitution" },
+  india: { name: "India", lawSystem: "Bharatiya Nyaya Sanhita (BNS), BNSS, and the Constitution" },
   usa: { name: "United States", lawSystem: "US Code, State Laws, and Constitutional Rights" },
   russia: { name: "Russia", lawSystem: "Criminal Code of the Russian Federation" },
   china: { name: "China", lawSystem: "Criminal Law of the People's Republic of China" },
@@ -73,65 +171,85 @@ const COUNTRY_INFO: Record<string, { name: string; lawSystem: string }> = {
   uk: { name: "United Kingdom", lawSystem: "Common Law, Statutory Law, and Human Rights Act" }
 };
 
-function retrieveFromLocalCorpus(query: string, caseType: string, country: string, topK: number = 5): LegalSection[] {
-  const queryLower = query.toLowerCase();
-  const queryWords = queryLower.split(/\s+/).filter(w => w.length > 3);
-  const countryCorpus = LEGAL_CORPUS[country] || LEGAL_CORPUS['india'];
-  
-  const scored = countryCorpus.map(section => {
-    let score = 0;
-    if (section.category.toLowerCase().includes(caseType.toLowerCase())) score += 5;
-    section.keywords.forEach(keyword => {
-      if (queryLower.includes(keyword.toLowerCase())) score += 3;
-    });
-    queryWords.forEach(word => {
-      if (section.content.toLowerCase().includes(word)) score += 1;
-      if (section.title.toLowerCase().includes(word)) score += 2;
-    });
-    return { ...section, score, source: 'local' };
-  });
-  
-  return scored.filter(s => s.score > 0).sort((a, b) => b.score - a.score).slice(0, topK);
-}
-
-async function searchSupabaseDatabase(supabase: any, query: string, caseType: string, country: string, topK: number = 5): Promise<LegalSection[]> {
-  const queryLower = query.toLowerCase();
-  const queryWords = queryLower.split(/\s+/).filter(w => w.length > 3);
+// Shared database fetch. Restricts to a single Layer 1 shard, or scans the full corpus.
+async function queryLegalSections(
+  supabase: any,
+  query: string,
+  country: string,
+  topK: number,
+  opts: { shard?: { domain?: string; userTrack?: string }; tier?: number }
+): Promise<LegalSection[]> {
+  const queryWords = (query || '').toLowerCase().split(/\s+/).filter(w => w.length > 3);
   if (queryWords.length === 0) return [];
-  
+
   try {
-    let query_builder = supabase
-      .from('legal_sections')
-      .select('*')
-      .eq('country', country);
-    
-    if (queryWords.length > 0) {
-      query_builder = query_builder.or(queryWords.map(w => `content.ilike.%${w}%`).join(','));
-    }
-    
-    const { data, error } = await query_builder.limit(topK * 2);
-    if (error) { console.error('Supabase search error:', error); return []; }
+    let builder = supabase.from('legal_sections').select('*').eq('country', country);
+
+    if (opts.tier) builder = builder.eq('tier', opts.tier);
+    if (opts.shard?.userTrack) builder = builder.eq('user_track', opts.shard.userTrack);
+    else if (opts.shard?.domain) builder = builder.eq('domain', opts.shard.domain);
+
+    builder = builder.or(
+      queryWords.map(w => `content.ilike.%${w}%`).concat(
+        queryWords.map(w => `title.ilike.%${w}%`)
+      ).join(',')
+    );
+
+    const { data, error } = await builder.limit(topK * 4);
+    if (error) { console.error('Legal sections query error:', error); return []; }
     if (!data || data.length === 0) return [];
-    
-    const scored = data.map((section: any) => {
-      let score = 0;
-      if (section.category?.toLowerCase().includes(caseType.toLowerCase())) score += 5;
-      (section.keywords || []).forEach((keyword: string) => {
-        if (queryLower.includes(keyword.toLowerCase())) score += 3;
-      });
-      queryWords.forEach(word => {
-        if (section.content?.toLowerCase().includes(word)) score += 1;
-        if (section.title?.toLowerCase().includes(word)) score += 2;
-      });
-      return { ...section, score, source: 'database' };
-    });
-    
-    return scored.filter((s: any) => s.score > 0).sort((a: any, b: any) => b.score - a.score).slice(0, topK);
+
+    return scoreSections(
+      data.map((d: any) => ({ ...d, source: d.source === 'scraped' ? 'scraped' : 'database' })),
+      query
+    ).slice(0, topK);
   } catch (error) {
-    console.error('Database search error:', error);
+    console.error('Legal sections query failed:', error);
     return [];
   }
 }
+
+// LAYER 1 — selected shard only (tier 1 database rows + matching local corpus)
+async function searchShard(
+  supabase: any,
+  query: string,
+  country: string,
+  shard: { domain?: string; userTrack?: string },
+  topK: number
+): Promise<LegalSection[]> {
+  const [local, db] = await Promise.all([
+    Promise.resolve(retrieveFromLocalCorpus(query, country, topK, shard)),
+    queryLegalSections(supabase, query, country, topK, { shard, tier: 1 }),
+  ]);
+  return dedupe([...local, ...db]).slice(0, topK);
+}
+
+// LAYER 2 — complete combined index, all domains and tiers
+async function searchFullIndex(
+  supabase: any,
+  query: string,
+  country: string,
+  topK: number
+): Promise<LegalSection[]> {
+  const [local, db] = await Promise.all([
+    Promise.resolve(retrieveFromLocalCorpus(query, country, topK)),
+    queryLegalSections(supabase, query, country, topK, {}),
+  ]);
+  return dedupe([...local, ...db]).slice(0, topK);
+}
+
+function dedupe(sections: LegalSection[]): LegalSection[] {
+  const seen = new Set<string>();
+  const out: LegalSection[] = [];
+  for (const s of sections.sort((a, b) => (b.score || 0) - (a.score || 0))) {
+    const key = `${s.section}`.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(s);
+  }
+  return out;
+}
+
 
 // Indian Kanoon API search (official Indian legal portal)
 async function searchIndianKanoon(query: string, topK: number = 5): Promise<LegalSection[]> {
@@ -197,60 +315,80 @@ async function searchIndianKanoon(query: string, topK: number = 5): Promise<Lega
   }
 }
 
-// Main cascading search function
-async function cascadingLegalSearch(
+// Tiered cascade: Layer 1 (selected shard) -> Layer 2 (full corpus) -> Layer 3 (live search)
+async function tieredLegalSearch(
   supabase: any,
   query: string,
   caseType: string,
   country: string,
-  minResults: number = 3,
   deepSearch: boolean = false
-): Promise<{ sections: LegalSection[], sources: string[], searchLevels: number }> {
+): Promise<{
+  sections: LegalSection[];
+  sources: string[];
+  layer: 1 | 2 | 3;
+  layerLabel: string;
+  confidence: number;
+  shardLabel: string;
+}> {
+  const shard = resolveShard(caseType);
+  const topK = deepSearch ? 12 : 6;
   const sources: string[] = [];
-  let allSections: LegalSection[] = [];
-  let searchLevels = 0;
-  
-  // Step 1: Search local corpus (always)
-  console.log(`Step 1: Searching local corpus for ${country}...`);
-  const localResults = retrieveFromLocalCorpus(query, caseType, country, deepSearch ? 10 : 6);
-  if (localResults.length > 0) {
-    sources.push('local_corpus');
-    allSections = [...allSections, ...localResults];
+
+  // ---- LAYER 1: selected shard only. No lateral search across other shards. ----
+  console.log(`Layer 1: shard "${shard.userTrack || shard.domain}" (${country})`);
+  const layer1 = await searchShard(supabase, query, country, shard, topK);
+  const c1 = confidenceOf(layer1);
+  console.log(`Layer 1 confidence: ${c1.toFixed(2)} (threshold ${LAYER1_THRESHOLD}) — ${layer1.length} sections`);
+
+  if (!deepSearch && c1 >= LAYER1_THRESHOLD) {
+    layer1.forEach(s => { if (s.source && !sources.includes(s.source)) sources.push(s.source); });
+    return {
+      sections: layer1,
+      sources,
+      layer: 1,
+      layerLabel: `Layer 1 · ${shard.label}`,
+      confidence: c1,
+      shardLabel: shard.label,
+    };
   }
-  searchLevels++;
-  
-  // Step 2: Search Supabase database (always in deep, or if not enough)
-  if (deepSearch || allSections.length < minResults) {
-    console.log('Step 2: Searching database...');
-    const dbResults = await searchSupabaseDatabase(supabase, query, caseType, country, deepSearch ? 10 : 5);
-    if (dbResults.length > 0) {
-      sources.push('database');
-      const existingSections = new Set(allSections.map(s => s.section));
-      const uniqueDbResults = dbResults.filter(s => !existingSections.has(s.section));
-      allSections = [...allSections, ...uniqueDbResults];
-    }
-    searchLevels++;
+
+  // ---- LAYER 2: complete combined index, any domain ----
+  console.log('Layer 2: full legal corpus...');
+  const layer2 = dedupe([...layer1, ...(await searchFullIndex(supabase, query, country, topK * 2))]);
+  const c2 = confidenceOf(layer2);
+  console.log(`Layer 2 confidence: ${c2.toFixed(2)} (threshold ${LAYER2_THRESHOLD}) — ${layer2.length} sections`);
+
+  if (!deepSearch && c2 >= LAYER2_THRESHOLD) {
+    layer2.forEach(s => { if (s.source && !sources.includes(s.source)) sources.push(s.source); });
+    return {
+      sections: layer2.slice(0, topK * 2),
+      sources,
+      layer: 2,
+      layerLabel: 'Layer 2 · Full Legal Corpus',
+      confidence: c2,
+      shardLabel: shard.label,
+    };
   }
-  
-  // Step 3: Indian Kanoon (for India) - always in deep search, or if insufficient results
-  if (country === 'india' && (deepSearch || allSections.length < minResults)) {
-    console.log('Step 3: Searching Indian Kanoon...');
-    const kanoonResults = await searchIndianKanoon(query, deepSearch ? 8 : 5);
-    if (kanoonResults.length > 0) {
-      sources.push('indian_kanoon');
-      const existingSections = new Set(allSections.map(s => s.section));
-      const uniqueResults = kanoonResults.filter(s => !existingSections.has(s.section));
-      allSections = [...allSections, ...uniqueResults];
-    }
-    searchLevels++;
+
+  // ---- LAYER 3: live search (last resort) ----
+  let combined = layer2;
+  if (country === 'india') {
+    console.log('Layer 3: live Indian Kanoon search...');
+    const live = scoreSections(await searchIndianKanoon(query, deepSearch ? 8 : 5), query);
+    combined = dedupe([...combined, ...live.map(s => ({ ...s, source: 'indian_kanoon' }))]);
   }
-  
+  combined.forEach(s => { if (s.source && !sources.includes(s.source)) sources.push(s.source); });
+
   return {
-    sections: allSections.slice(0, deepSearch ? 20 : 10),
+    sections: combined.slice(0, deepSearch ? 25 : 12),
     sources,
-    searchLevels,
+    layer: 3,
+    layerLabel: 'Layer 3 · Live Legal Search',
+    confidence: confidenceOf(combined),
+    shardLabel: shard.label,
   };
 }
+
 
 const NER_TOOL = {
   type: "function",
@@ -341,13 +479,13 @@ Deno.serve(async (req) => {
     const lastUserMessage = messages.filter((m: any) => m.role === 'user').pop();
     const userQuery = lastUserMessage?.content || '';
 
-    // Perform cascading search with deep search flag
+    // Tiered search: Layer 1 shard -> Layer 2 full corpus -> Layer 3 live
     console.log(`Starting ${deepSearch ? 'DEEP' : 'standard'} legal search for ${country}:`, userQuery);
-    const { sections: relevantSections, sources, searchLevels } = await cascadingLegalSearch(
-      supabase, userQuery, caseType || 'Criminal', country, 3, deepSearch
-    );
-    
-    console.log(`Found ${relevantSections.length} sections from ${searchLevels} levels: ${sources.join(', ')}`);
+    const {
+      sections: relevantSections, sources, layer, layerLabel, confidence, shardLabel,
+    } = await tieredLegalSearch(supabase, userQuery, caseType || 'criminal', country, deepSearch);
+
+    console.log(`Answered from ${layerLabel} — ${relevantSections.length} sections, confidence ${confidence.toFixed(2)}`);
 
     const legalContext = relevantSections.length > 0
       ? relevantSections
@@ -355,19 +493,24 @@ Deno.serve(async (req) => {
           .join('\n\n')
       : 'No specific legal provisions found. Please provide more details about your case.';
 
-    const sourcesNote = sources.length > 0
-      ? `\n\n*Data retrieved from: ${sources.map(s => s.replace('_', ' ')).join(', ')} (${searchLevels} database levels searched)*`
-      : '';
+    const sourcesNote = `\n\n*Retrieved from ${layerLabel}${sources.length ? ` (${sources.map(s => s.replace(/_/g, ' ')).join(', ')})` : ''} — relevance ${(confidence * 100).toFixed(0)}%*`;
 
     const countryInfo = COUNTRY_INFO[country] || COUNTRY_INFO['india'];
 
+    const layerNote = layer === 2
+      ? `\n\n**NOTE:** The focused ${shardLabel} shard did not contain a confident match, so the complete legal corpus was searched. Some provisions below may come from a different legal domain — mention this when it is relevant.`
+      : layer === 3
+        ? `\n\n**NOTE:** Both stored layers were insufficient, so live legal sources were consulted. Flag any citation the practitioner must verify.`
+        : '';
+
     const deepSearchInstruction = deepSearch ? `\n\n**⚡ DEEP SEARCH MODE ACTIVE:**
-You have been given results from ALL available database levels (${searchLevels} levels searched: ${sources.join(', ')}).
+You have been given results from ALL available layers (${layerLabel}; sources: ${sources.join(', ')}).
 - Provide an EXHAUSTIVE legal analysis with every applicable section, precedent, and provision.
 - After listing all found laws, ASK the user: "Do you have any other leads, keywords, or specific legal areas you'd like me to investigate further?"
 - Be thorough and leave no stone unturned. This is a deep investigation.
 - Organize results by source and relevance.
 - If Indian Kanoon results are included, cite the case names and relevant holdings.` : '';
+
 
     let systemPrompt: string;
     
@@ -388,7 +531,7 @@ You have been given results from ALL available database levels (${searchLevels} 
 - Always end with reassurance
 
 **Relevant Legal Provisions for ${countryInfo.name}:**
-${legalContext}${sourcesNote}${deepSearchInstruction}
+${legalContext}${sourcesNote}${layerNote}${deepSearchInstruction}
 
 **Case Type:** ${caseType || 'Emergency'}
 **Jurisdiction:** ${countryInfo.name}
@@ -409,7 +552,7 @@ Remember: Safety and emotional wellbeing first, legal details second.`;
 6. LEGAL STRATEGY - Build arguments, anticipate counterarguments, prepare for trial
 
 **Relevant Legal Provisions (${countryInfo.name}):**
-${legalContext}${sourcesNote}${deepSearchInstruction}
+${legalContext}${sourcesNote}${layerNote}${deepSearchInstruction}
 
 **Case Type:** ${caseType || 'Not specified'}
 **Jurisdiction:** ${countryInfo.name}
@@ -462,11 +605,16 @@ All citations should be verified by the practitioner.`;
     return new Response(response.body, {
       headers: {
         ...corsHeaders,
+        'Access-Control-Expose-Headers': 'x-search-layer, x-search-layer-label, x-search-confidence',
+        'x-search-layer': String(layer),
+        'x-search-layer-label': layerLabel,
+        'x-search-confidence': confidence.toFixed(2),
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
         'Connection': 'keep-alive',
       },
     });
+
 
   } catch (error) {
     console.error('Chat error:', error);
