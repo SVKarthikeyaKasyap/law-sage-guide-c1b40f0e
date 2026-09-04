@@ -479,13 +479,13 @@ Deno.serve(async (req) => {
     const lastUserMessage = messages.filter((m: any) => m.role === 'user').pop();
     const userQuery = lastUserMessage?.content || '';
 
-    // Perform cascading search with deep search flag
+    // Tiered search: Layer 1 shard -> Layer 2 full corpus -> Layer 3 live
     console.log(`Starting ${deepSearch ? 'DEEP' : 'standard'} legal search for ${country}:`, userQuery);
-    const { sections: relevantSections, sources, searchLevels } = await cascadingLegalSearch(
-      supabase, userQuery, caseType || 'Criminal', country, 3, deepSearch
-    );
-    
-    console.log(`Found ${relevantSections.length} sections from ${searchLevels} levels: ${sources.join(', ')}`);
+    const {
+      sections: relevantSections, sources, layer, layerLabel, confidence, shardLabel,
+    } = await tieredLegalSearch(supabase, userQuery, caseType || 'criminal', country, deepSearch);
+
+    console.log(`Answered from ${layerLabel} — ${relevantSections.length} sections, confidence ${confidence.toFixed(2)}`);
 
     const legalContext = relevantSections.length > 0
       ? relevantSections
@@ -493,19 +493,24 @@ Deno.serve(async (req) => {
           .join('\n\n')
       : 'No specific legal provisions found. Please provide more details about your case.';
 
-    const sourcesNote = sources.length > 0
-      ? `\n\n*Data retrieved from: ${sources.map(s => s.replace('_', ' ')).join(', ')} (${searchLevels} database levels searched)*`
-      : '';
+    const sourcesNote = `\n\n*Retrieved from ${layerLabel}${sources.length ? ` (${sources.map(s => s.replace(/_/g, ' ')).join(', ')})` : ''} — relevance ${(confidence * 100).toFixed(0)}%*`;
 
     const countryInfo = COUNTRY_INFO[country] || COUNTRY_INFO['india'];
 
+    const layerNote = layer === 2
+      ? `\n\n**NOTE:** The focused ${shardLabel} shard did not contain a confident match, so the complete legal corpus was searched. Some provisions below may come from a different legal domain — mention this when it is relevant.`
+      : layer === 3
+        ? `\n\n**NOTE:** Both stored layers were insufficient, so live legal sources were consulted. Flag any citation the practitioner must verify.`
+        : '';
+
     const deepSearchInstruction = deepSearch ? `\n\n**⚡ DEEP SEARCH MODE ACTIVE:**
-You have been given results from ALL available database levels (${searchLevels} levels searched: ${sources.join(', ')}).
+You have been given results from ALL available layers (${layerLabel}; sources: ${sources.join(', ')}).
 - Provide an EXHAUSTIVE legal analysis with every applicable section, precedent, and provision.
 - After listing all found laws, ASK the user: "Do you have any other leads, keywords, or specific legal areas you'd like me to investigate further?"
 - Be thorough and leave no stone unturned. This is a deep investigation.
 - Organize results by source and relevance.
 - If Indian Kanoon results are included, cite the case names and relevant holdings.` : '';
+
 
     let systemPrompt: string;
     
